@@ -1,0 +1,11 @@
+{
+  "name": "@imds/marketing-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev --config ../../wrangler.jsonc",
+    "build": "node scripts/build.mjs",
+    "check": "node --check scripts/build.mjs",
+    "test": "node --test"
+  }
+}
