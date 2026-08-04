@@ -3,6 +3,7 @@ import {Link,useRouterState} from '@tanstack/react-router';
 import {useI18n,type Language} from '../i18n/I18nProvider';
 import {moduleDomains} from '../modules/catalog';
 import {getModuleHref,isImplementedModule} from '../modules/navigation';
+import {getModuleDeliveryStatus,moduleDeliveryLabels} from '../modules/progress';
 import {BrandGlyph} from './BrandGlyph';
 import {useAuth} from './AuthProvider';
 
@@ -24,10 +25,16 @@ export function AppShell({children}:{children:ReactNode}){
       <div className="brand"><BrandGlyph/><div><strong>IMDS</strong><span>Signal Workspace</span></div></div>
       {workspace&&<select className="tenant-switcher" value={agency?.id||''} onChange={event=>void switchAgency(event.target.value)}>{workspace.agencies.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select>}
       <button className="global-search"><span className="search-pulse"/><span>{t('common.searchEverything')}</span><kbd>⌘K</kbd></button>
+      <div className="module-status-legend" aria-label="Статусы готовности модулей">
+        <span><i className="nav-module-state nav-module-state--not_started"/>Не начат</span>
+        <span><i className="nav-module-state nav-module-state--in_progress"/>В работе</span>
+        <span><i className="nav-module-state nav-module-state--complete"/>Готов</span>
+        <span><i className="nav-module-state nav-module-state--error"/>Ошибка</span>
+      </div>
       <nav className="module-tree">
         {moduleDomains.map((domain,index)=><details className="module-domain" key={domain.id} open={index<8}>
           <summary><span>{domain.name}</span><small>{domain.modules.length}</small></summary>
-          <div className="module-domain__items">{domain.modules.map(module=>{const href=getModuleHref(module,activeClientId);const active=pathname===href||(!isImplementedModule(module.id)&&pathname===`/platform/module/${module.id}`);return <Link key={module.id} to={href as never} className={`nav-link ${active?'is-active':''}`} title={module.description}><span className="nav-signal"/><span className="nav-link__label">{module.name}</span><i className={`nav-module-state nav-module-state--${module.status}`} title={module.status}/></Link>})}</div>
+          <div className="module-domain__items">{domain.modules.map(module=>{const href=getModuleHref(module,activeClientId);const active=pathname===href||(!isImplementedModule(module.id)&&pathname===`/platform/module/${module.id}`);const deliveryStatus=getModuleDeliveryStatus(module.id);return <Link key={module.id} to={href as never} className={`nav-link ${active?'is-active':''}`} title={`${module.description} · ${moduleDeliveryLabels[deliveryStatus]}`}><span className="nav-signal"/><span className="nav-link__label">{module.name}</span><i className={`nav-module-state nav-module-state--${deliveryStatus}`} title={moduleDeliveryLabels[deliveryStatus]}/></Link>})}</div>
         </details>)}
       </nav>
       <div className="sidebar-bottom">
