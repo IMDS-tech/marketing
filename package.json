@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "bun run --cwd apps/marketing-web build",
+    "postinstall": "cd apps/marketing-web && bun run build",
     "build": "pnpm --filter @imds/marketing-web build",
     "dev": "pnpm --filter @imds/marketing-web dev",
     "deploy": "pnpm build && wrangler deploy",
