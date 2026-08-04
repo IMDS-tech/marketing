@@ -5,6 +5,7 @@ import {createRootRoute,createRoute,createRouter,Outlet,RouterProvider} from '@t
 import {AppShell} from './app/AppShell';
 import {AuthProvider,useAuth} from './app/AuthProvider';
 import {ClientsPage} from './pages/ClientsPage';
+import {DashboardPage} from './pages/DashboardPage';
 import {DataSourcesPage} from './pages/DataSourcesPage';
 import {EmptySectionPage} from './pages/EmptySectionPage';
 import {ForbiddenPage} from './pages/ForbiddenPage';
@@ -23,10 +24,11 @@ const kpisRoute=createRoute({getParentRoute:()=>rootRoute,path:'/kpis',component
 const dataRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data',component:DataSourcesPage});
 const templatesRoute=createRoute({getParentRoute:()=>rootRoute,path:'/templates',component:()=> <EmptySectionPage title="Templates"/>});
 const exportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/exports',component:()=> <EmptySectionPage title="Exports"/>});
+const dashboardRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/dashboards',component:DashboardPage});
 const metaCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/meta-ads/campaigns',component:MetaAdsCampaignsPage});
 const tiktokCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/tiktok-ads/campaigns',component:TikTokAdsCampaignsPage});
 const forbiddenRoute=createRoute({getParentRoute:()=>rootRoute,path:'/403',component:ForbiddenPage});
-const router=createRouter({routeTree:rootRoute.addChildren([clientsRoute,reportsRoute,rollupsRoute,kpisRoute,dataRoute,templatesRoute,exportsRoute,metaCampaignsRoute,tiktokCampaignsRoute,forbiddenRoute])});
+const router=createRouter({routeTree:rootRoute.addChildren([clientsRoute,reportsRoute,rollupsRoute,kpisRoute,dataRoute,templatesRoute,exportsRoute,dashboardRoute,metaCampaignsRoute,tiktokCampaignsRoute,forbiddenRoute])});
 declare module '@tanstack/react-router'{interface Register{router:typeof router}}
 const queryClient=new QueryClient({defaultOptions:{queries:{staleTime:30000,retry:1}}});
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><QueryClientProvider client={queryClient}><AuthProvider><RouterProvider router={router}/></AuthProvider></QueryClientProvider></React.StrictMode>);
