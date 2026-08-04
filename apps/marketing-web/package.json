@@ -1,13 +1,13 @@
 {
   "name": "@imds/marketing-web",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "check": "tsc -b --pretty false",
+    "check": "tsc --noEmit --pretty false",
     "test": "node --test"
   },
   "dependencies": {
