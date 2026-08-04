@@ -22,6 +22,7 @@ export function AppShell({children}:{children:ReactNode}){
     {group:t('nav.analysis')},{label:t('nav.reports'),to:'/reports'},{label:t('nav.rollups'),to:'/rollups'},
     {group:t('nav.projectManagement')},{label:t('nav.kpis'),to:'/kpis'},
     {group:t('nav.management')},{label:t('nav.data'),to:'/data'},{label:t('nav.templates'),to:'/templates'},{label:t('nav.exports'),to:'/exports'},
+    {group:'PLATFORM'},{label:'Modules & architecture',to:'/platform/modules'},
   ] as const;
 
   return <div className="app-shell" style={{'--brand-color':agency?.branding.primaryColor||'#2962ff'} as React.CSSProperties}>
