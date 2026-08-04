@@ -26,7 +26,10 @@ export const moduleCompletionCriteria=[
 const progress:Record<string,ModuleProgressRecord>={
   authentication:{status:'in_progress'},
   workspace:{status:'in_progress'},
-  'multi-tenancy':{status:'in_progress'},
+  'multi-tenancy':{
+    status:'complete',
+    note:'Tenant-scoped RLS, API, jobs, OAuth references, storage paths and isolation tests are complete.',
+  },
   permissions:{status:'in_progress'},
   audit:{status:'in_progress'},
   'client-directory':{status:'in_progress'},
