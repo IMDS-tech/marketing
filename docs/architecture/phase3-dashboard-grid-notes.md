@@ -1,0 +1,1 @@
+This stacked branch is based on `agent/phase2-tiktok-sync-lifecycle` and should be merged after PR #10. Cloudflare preview build remains the final frontend validation step because the current execution environment cannot clone and install the private repository locally.

@@ -1,2 +1,3 @@
 import {Button,EmptyState} from '@imds/ui';
-export function ForbiddenPage(){return <EmptyState icon="403" title="Нет доступа" description="У вашей роли нет разрешения на этот раздел." benefits={["Доступ управляется на уровне агентства","Клиент видит только назначенные проекты","Все проверки дублируются RLS"]} action={<Button onClick={()=>history.back()}>Назад</Button>}/>}
+import {useI18n} from '../i18n/I18nProvider';
+export function ForbiddenPage(){const{t}=useI18n();return <EmptyState icon="403" title={t('forbidden.title')} description={t('forbidden.description')} benefits={[t('forbidden.benefitAgency'),t('forbidden.benefitProjects'),t('forbidden.benefitRls')]} action={<Button onClick={()=>history.back()}>{t('common.back')}</Button>}/>}

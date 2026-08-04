@@ -1,0 +1,2 @@
+import 'reflect-metadata';import {NestFactory} from '@nestjs/core';import {FastifyAdapter,NestFastifyApplication} from '@nestjs/platform-fastify';import {AppModule} from './app.module.js';import {config} from './config.js';
+const app=await NestFactory.create<NestFastifyApplication>(AppModule,new FastifyAdapter({logger:true}));app.enableCors({origin:config.APP_ORIGIN,methods:['GET','POST'],allowedHeaders:['authorization','content-type']});app.enableShutdownHooks();await app.listen(config.PORT,'0.0.0.0');
