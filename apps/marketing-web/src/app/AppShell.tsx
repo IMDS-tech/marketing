@@ -1,6 +1,8 @@
 import type {ReactNode} from 'react';
 import {Link,useRouterState} from '@tanstack/react-router';
 import {useI18n,type Language} from '../i18n/I18nProvider';
+import {moduleDomains} from '../modules/catalog';
+import {getModuleHref,isImplementedModule} from '../modules/navigation';
 import {BrandGlyph} from './BrandGlyph';
 import {useAuth} from './AuthProvider';
 
@@ -16,22 +18,20 @@ export function AppShell({children}:{children:ReactNode}){
   const initials=(user?.name||'IM').split(' ').map(part=>part[0]).join('').slice(0,2).toUpperCase();
   const roleKey=String(agency?.role||'demo').toLowerCase();
   const role=t(`roles.${roleKey}`);
-  const sections=[
-    {label:t('nav.clients'),to:'/'},{group:t('nav.paidAds')},
-    {label:t('nav.metaAds'),to:`/client/${activeClientId}/meta-ads/campaigns`},{label:t('nav.tiktokAds'),to:`/client/${activeClientId}/tiktok-ads/campaigns`},
-    {group:t('nav.analysis')},{label:t('nav.reports'),to:'/reports'},{label:t('nav.rollups'),to:'/rollups'},
-    {group:t('nav.projectManagement')},{label:t('nav.kpis'),to:'/kpis'},
-    {group:t('nav.management')},{label:t('nav.data'),to:'/data'},{label:t('nav.templates'),to:'/templates'},{label:t('nav.exports'),to:'/exports'},
-    {group:'PLATFORM'},{label:'Modules & architecture',to:'/platform/modules'},
-  ] as const;
 
   return <div className="app-shell" style={{'--brand-color':agency?.branding.primaryColor||'#2962ff'} as React.CSSProperties}>
     <aside className="sidebar">
       <div className="brand"><BrandGlyph/><div><strong>IMDS</strong><span>Signal Workspace</span></div></div>
       {workspace&&<select className="tenant-switcher" value={agency?.id||''} onChange={event=>void switchAgency(event.target.value)}>{workspace.agencies.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select>}
       <button className="global-search"><span className="search-pulse"/><span>{t('common.searchEverything')}</span><kbd>⌘K</kbd></button>
-      <nav>{sections.map((item,index)=>'group' in item?<div className="nav-group" key={`${item.group}-${index}`}>{item.group}</div>:<Link key={item.to} to={item.to as never} className={`nav-link ${pathname===item.to?'is-active':''}`}><span className="nav-signal"/>{item.label}</Link>)}</nav>
+      <nav className="module-tree">
+        {moduleDomains.map((domain,index)=><details className="module-domain" key={domain.id} open={index<8}>
+          <summary><span>{domain.name}</span><small>{domain.modules.length}</small></summary>
+          <div className="module-domain__items">{domain.modules.map(module=>{const href=getModuleHref(module,activeClientId);const active=pathname===href||(!isImplementedModule(module.id)&&pathname===`/platform/module/${module.id}`);return <Link key={module.id} to={href as never} className={`nav-link ${active?'is-active':''}`} title={module.description}><span className="nav-signal"/><span className="nav-link__label">{module.name}</span><i className={`nav-module-state nav-module-state--${module.status}`} title={module.status}/></Link>})}</div>
+        </details>)}
+      </nav>
       <div className="sidebar-bottom">
+        <Link to="/platform/modules" className="architecture-link">Архитектура и статусы</Link>
         <div className="setup-card"><div><span>{t('account.setup')}</span><strong>40%</strong></div><div className="progress"><span/></div><small>{t('account.stepsCompleted',{completed:2,total:5})}</small></div>
         <div className="account-card"><div className="avatar">{initials}</div><div><strong>{user?.name||t('account.demoUser')}</strong><span>{role}</span></div>{configured?<button onClick={()=>void signOut()} title={t('common.logout')}>↗</button>:<button title={t('common.demoMode')}>•••</button>}</div>
       </div>
