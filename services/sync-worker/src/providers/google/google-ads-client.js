@@ -9,7 +9,7 @@ const BASE_METRICS = [
 ];
 
 export class GoogleAdsClient {
-  constructor({ accessToken, developerToken, loginCustomerId = null, apiVersion = 'v25', maxRetries = 5, fetchImpl = fetch, sleepImpl }) {
+  constructor({ accessToken, developerToken, loginCustomerId = null, apiVersion = 'v24', maxRetries = 5, fetchImpl = fetch, sleepImpl }) {
     const headers = { 'developer-token': developerToken };
     if (loginCustomerId) headers['login-customer-id'] = String(loginCustomerId).replace(/-/g, '');
     this.client = new GoogleApiClient({
