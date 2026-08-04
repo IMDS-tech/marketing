@@ -13,6 +13,10 @@ export class MarketingRepository {
     return Array.isArray(rows) ? rows[0] || null : null;
   }
 
+  enqueueResync(targetDate = null, { signal } = {}) {
+    return this.client.rpc('enqueue_marketing_resync_jobs', { target_date: targetDate }, { signal });
+  }
+
   async getDataSource(id, { signal } = {}) {
     const rows = await this.client.request(`data_sources?select=id,agency_id,client_id,integration_id,account_id,label,external_identifier,settings,status&id=eq.${eq(id)}&limit=1`, { signal });
     const source = rows?.[0];
