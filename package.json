@@ -1,0 +1,19 @@
+{
+  "name": "@imds/marketing",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.14.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm --filter @imds/marketing-web build",
+    "dev": "pnpm --filter @imds/marketing-web dev",
+    "deploy": "wrangler deploy",
+    "check": "pnpm -r check",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "wrangler": "4.118.0"
+  }
+}
