@@ -16,6 +16,7 @@ import {ModulePlaceholderPage} from './pages/ModulePlaceholderPage';
 import {NotFoundPage} from './pages/NotFoundPage';
 import {MetaAdsCampaignsPage,TikTokAdsCampaignsPage} from './pages/integrations/PaidAdsCampaignsPage';
 import './styles.css';
+import './module-navigation.css';
 import './auth.css';
 
 function Root(){const{configured,loading,session,workspace,error}=useAuth();const{t}=useI18n();if(loading)return <div className="center-screen">{t('common.loadingWorkspace')}</div>;if(configured&&!session)return <LoginPage/>;if(error&&!workspace)return <div className="center-screen error-card">{error}</div>;return <AppShell><Outlet/></AppShell>}
