@@ -37,7 +37,7 @@ export function ClientsPage(){
     setSaving(true);setFormError('');
     try{
       const db=getSupabaseBrowserClient();
-      const{error}=await db.from('clients').insert({agency_id:workspace.activeAgency.id,company:company.trim(),url:url.trim()||null,country:country.trim()||null,timezone,language:clientLanguage,brand_color:brandColor});
+      const{error}=await db.from('clients').insert({agency_id:workspace!.activeAgency!.id,company:company.trim(),url:url.trim()||null,country:country.trim()||null,timezone,language:clientLanguage,brand_color:brandColor});
       if(error)throw error;
       setOpen(false);setCompany('');setUrl('');setCountry('Kazakhstan');setTimezone('Asia/Almaty');setClientLanguage(language);setBrandColor('#0072EE');
       await refresh();
