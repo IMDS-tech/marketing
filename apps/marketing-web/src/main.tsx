@@ -5,7 +5,7 @@ import {createRootRoute,createRoute,createRouter,Outlet,RouterProvider} from '@t
 import {AppShell} from './app/AppShell';
 import {AuthProvider,useAuth} from './app/AuthProvider';
 import {ClientsPage} from './pages/ClientsPage';
-import {DashboardPage} from './pages/DashboardPage';
+import {DashboardWorkspacePage} from './pages/dashboard/DashboardWorkspacePage';
 import {DataSourcesPage} from './pages/DataSourcesPage';
 import {EmptySectionPage} from './pages/EmptySectionPage';
 import {ForbiddenPage} from './pages/ForbiddenPage';
@@ -24,7 +24,7 @@ const kpisRoute=createRoute({getParentRoute:()=>rootRoute,path:'/kpis',component
 const dataRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data',component:DataSourcesPage});
 const templatesRoute=createRoute({getParentRoute:()=>rootRoute,path:'/templates',component:()=> <EmptySectionPage title="Templates"/>});
 const exportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/exports',component:()=> <EmptySectionPage title="Exports"/>});
-const dashboardRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/dashboards',component:DashboardPage});
+const dashboardRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/dashboards',component:DashboardWorkspacePage});
 const metaCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/meta-ads/campaigns',component:MetaAdsCampaignsPage});
 const tiktokCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/tiktok-ads/campaigns',component:TikTokAdsCampaignsPage});
 const forbiddenRoute=createRoute({getParentRoute:()=>rootRoute,path:'/403',component:ForbiddenPage});
