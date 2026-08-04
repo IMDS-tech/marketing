@@ -1,0 +1,6 @@
+import {createClient,type SupabaseClient} from '@supabase/supabase-js';
+import {getDemoBootstrap,type WorkspaceBootstrap} from '@imds/api-client';
+let browserClient:SupabaseClient|null=null;
+export function hasSupabaseEnvironment(){return Boolean(import.meta.env.VITE_SUPABASE_URL&&import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)}
+export function getSupabaseBrowserClient(){if(browserClient)return browserClient;const url=import.meta.env.VITE_SUPABASE_URL;const key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;if(!url||!key)throw new Error('Supabase environment is not configured');browserClient=createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});return browserClient}
+export async function loadWorkspaceBootstrap():Promise<WorkspaceBootstrap>{if(!hasSupabaseEnvironment())return getDemoBootstrap();const client=getSupabaseBrowserClient();const{data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError)throw sessionError;if(!sessionData.session)return getDemoBootstrap();const{data,error}=await client.rpc('workspace_bootstrap');if(error)throw error;if(!data)throw new Error('Workspace bootstrap returned no data');return{...(data as WorkspaceBootstrap),mode:'supabase'}}
