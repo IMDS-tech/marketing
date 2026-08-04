@@ -1,4 +1,5 @@
-const CONFLICT = 'agency_id,client_id,data_source_id,integration_slug,entity_type,entity_id,metric_date,metric_key';
+const METRIC_CONFLICT = 'agency_id,client_id,data_source_id,integration_slug,entity_type,entity_id,metric_date,metric_key';
+const BREAKDOWN_CONFLICT = 'agency_id,client_id,data_source_id,integration_slug,entity_type,entity_id,breakdown_type,breakdown_value,metric_date,metric_key,attribution_setting';
 
 function eq(value) { return encodeURIComponent(String(value)); }
 
@@ -33,11 +34,19 @@ export class MarketingRepository {
     return { ...source, integration_slug: integration.slug, credential_handle: account.credential_handle, account_metadata: account.metadata || {}, account_external_id: account.external_account_id };
   }
 
-  async upsertMetrics(rows, { signal } = {}) {
+  upsertMetrics(rows, options = {}) {
+    return this.#upsertRows('marketing_daily_metrics', METRIC_CONFLICT, rows, options);
+  }
+
+  upsertBreakdowns(rows, options = {}) {
+    return this.#upsertRows('marketing_breakdown_daily', BREAKDOWN_CONFLICT, rows, options);
+  }
+
+  async #upsertRows(table, conflict, rows, { signal } = {}) {
     let written = 0;
     for (let offset = 0; offset < rows.length; offset += this.chunkSize) {
       const chunk = rows.slice(offset, offset + this.chunkSize);
-      await this.client.request(`marketing_daily_metrics?on_conflict=${encodeURIComponent(CONFLICT)}`, {
+      await this.client.request(`${table}?on_conflict=${encodeURIComponent(conflict)}`, {
         method: 'POST', body: chunk, signal,
         headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
       });
