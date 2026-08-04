@@ -1,0 +1,25 @@
+name: Sync worker checks
+on:
+  pull_request:
+    paths: ['services/sync-worker/**', '.github/workflows/sync-worker.yml']
+  push:
+    branches: [main]
+    paths: ['services/sync-worker/**', '.github/workflows/sync-worker.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/sync-worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: services/sync-worker/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
