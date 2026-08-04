@@ -1,5 +1,12 @@
 import {createClient,type Session,type SupabaseClient} from '@supabase/supabase-js';
-import {getDemoBootstrap,type WorkspaceBootstrap} from '@imds/api-client';
+import {getDemoBootstrap,type WorkspaceBootstrap,type WorkspacePreferences} from '@imds/api-client';
+
+export type AuthSessionRecord={id:string;createdAt:string|null;updatedAt:string|null;refreshedAt:string|null;notAfter:string|null;aal:string;userAgent:string|null;ipAddress:string|null;isCurrent:boolean};
+export type AuthActivityRecord={id:string;action:string;createdAt:string|null;ipAddress:string|null;userAgent:string|null;provider:string|null};
+export type MfaFactor={id:string;friendly_name?:string;factor_type:string;status:string;created_at:string;updated_at:string};
+export type MfaEnrollment={id:string;type:string;totp:{qr_code:string;secret:string;uri:string}};
+export type AssuranceLevel={currentLevel:'aal1'|'aal2'|null;nextLevel:'aal1'|'aal2'|null;currentAuthenticationMethods:Array<{method:string;timestamp:number}>};
+
 let browserClient:SupabaseClient|null=null;
 export function hasSupabaseEnvironment(){return Boolean(import.meta.env.VITE_SUPABASE_URL&&import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)}
 export function getSupabaseBrowserClient(){if(browserClient)return browserClient;const url=import.meta.env.VITE_SUPABASE_URL;const key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;if(!url||!key)throw new Error('Supabase environment is not configured');browserClient=createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});return browserClient}
@@ -10,6 +17,18 @@ export async function signInWithMagicLink(email:string,redirectTo:string){const{
 export async function requestPasswordReset(email:string,redirectTo:string){const{error}=await getSupabaseBrowserClient().auth.resetPasswordForEmail(email,{redirectTo});if(error)throw error}
 export async function updatePassword(password:string){const{error}=await getSupabaseBrowserClient().auth.updateUser({password});if(error)throw error}
 export async function refreshCurrentSession(){const{data,error}=await getSupabaseBrowserClient().auth.refreshSession();if(error)throw error;return data.session}
-export async function signOut(scope:'local'|'global'='local'){if(hasSupabaseEnvironment()){const{error}=await getSupabaseBrowserClient().auth.signOut({scope});if(error)throw error}}
+export async function signOut(scope:'local'|'global'|'others'='local'){if(hasSupabaseEnvironment()){const{error}=await getSupabaseBrowserClient().auth.signOut({scope});if(error)throw error}}
+
+export async function listMfaFactors():Promise<MfaFactor[]>{if(!hasSupabaseEnvironment())return[];const{data,error}=await getSupabaseBrowserClient().auth.mfa.listFactors();if(error)throw error;return[...(data.totp??[]),...(data.phone??[])] as MfaFactor[]}
+export async function getAssuranceLevel():Promise<AssuranceLevel>{if(!hasSupabaseEnvironment())return{currentLevel:'aal1',nextLevel:'aal1',currentAuthenticationMethods:[]};const{data,error}=await getSupabaseBrowserClient().auth.mfa.getAuthenticatorAssuranceLevel();if(error)throw error;return data as AssuranceLevel}
+export async function enrollTotp(friendlyName='IMDS Authenticator'):Promise<MfaEnrollment>{const{data,error}=await getSupabaseBrowserClient().auth.mfa.enroll({factorType:'totp',friendlyName});if(error)throw error;return data as MfaEnrollment}
+export async function verifyTotp(factorId:string,code:string){const{data:challenge,error:challengeError}=await getSupabaseBrowserClient().auth.mfa.challenge({factorId});if(challengeError)throw challengeError;const{data,error}=await getSupabaseBrowserClient().auth.mfa.verify({factorId,challengeId:challenge.id,code});if(error)throw error;return data}
+export async function challengeAndVerifyTotp(factorId:string,code:string){return verifyTotp(factorId,code)}
+export async function unenrollMfaFactor(factorId:string){const{error}=await getSupabaseBrowserClient().auth.mfa.unenroll({factorId});if(error)throw error}
+
+export async function listAuthSessions():Promise<AuthSessionRecord[]>{if(!hasSupabaseEnvironment())return[];const{data,error}=await getSupabaseBrowserClient().rpc('list_my_auth_sessions');if(error)throw error;return(data??[]) as AuthSessionRecord[]}
+export async function listAuthActivity(limit=50):Promise<AuthActivityRecord[]>{if(!hasSupabaseEnvironment())return[];const{data,error}=await getSupabaseBrowserClient().rpc('list_my_auth_activity',{max_items:limit});if(error)throw error;return(data??[]) as AuthActivityRecord[]}
+export async function updateWorkspacePreferences(preferences:Partial<WorkspacePreferences>):Promise<WorkspacePreferences>{if(!hasSupabaseEnvironment())return{language:preferences.language??'ru',timezone:preferences.timezone??'Asia/Almaty',theme:preferences.theme??'system',settings:preferences.settings??{}};const{data,error}=await getSupabaseBrowserClient().rpc('update_workspace_preferences',{target_language:preferences.language??null,target_timezone:preferences.timezone??null,target_theme:preferences.theme??null,target_settings:preferences.settings??null});if(error)throw error;return data as WorkspacePreferences}
+export async function recordWorkspaceRecentItem(input:{agencyId:string;clientId?:string|null;itemType:string;itemId:string;title:string;route:string}){if(!hasSupabaseEnvironment())return;const{error}=await getSupabaseBrowserClient().rpc('record_workspace_recent_item',{target_agency_id:input.agencyId,target_client_id:input.clientId??null,target_item_type:input.itemType,target_item_id:input.itemId,target_title:input.title,target_route:input.route});if(error)throw error}
 export async function setWorkspaceContext(agencyId:string,clientId?:string|null){if(!hasSupabaseEnvironment())return{activeAgencyId:agencyId,activeClientId:clientId??null};const{data,error}=await getSupabaseBrowserClient().rpc('set_workspace_context',{target_agency_id:agencyId,target_client_id:clientId??null});if(error)throw error;return data as {activeAgencyId:string;activeClientId:string|null}}
 export async function loadWorkspaceBootstrap(activeAgencyId?:string|null):Promise<WorkspaceBootstrap>{if(!hasSupabaseEnvironment())return getDemoBootstrap(activeAgencyId);const client=getSupabaseBrowserClient();const{data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError)throw sessionError;if(!sessionData.session)throw new Error('AUTH_REQUIRED');const{data,error}=await client.rpc('workspace_bootstrap',{target_agency_id:activeAgencyId??null});if(error)throw error;if(!data)throw new Error('Workspace bootstrap returned no data');return{...(data as WorkspaceBootstrap),mode:'supabase'}}
