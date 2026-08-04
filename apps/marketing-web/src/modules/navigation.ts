@@ -2,6 +2,8 @@ import {moduleDomains} from './catalog';
 import type {ModuleDefinition} from './types';
 
 const implementedRoutes:Record<string,(clientId:string)=>string>={
+  authentication:()=>'/platform/authentication',
+  workspace:()=>'/platform/workspace',
   'client-directory':()=>'/',
   'integration-catalog':()=>'/data',
   'dashboard-directory':clientId=>`/client/${clientId}/dashboards`,
