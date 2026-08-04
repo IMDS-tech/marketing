@@ -1,6 +1,6 @@
 {
   "name": "@imds/marketing-web",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,6 +13,7 @@
   "dependencies": {
     "@imds/api-client": "workspace:*",
     "@imds/auth": "workspace:*",
+    "@imds/integrations": "workspace:*",
     "@imds/permissions": "workspace:*",
     "@imds/ui": "workspace:*",
     "@supabase/supabase-js": "2.49.1",
