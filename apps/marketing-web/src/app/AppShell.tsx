@@ -42,7 +42,6 @@ export function AppShell({children}:{children:ReactNode}){
           <label className="language-select" title={t('language.select')}><span>LANG</span><select aria-label={t('language.select')} value={language} onChange={event=>setLanguage(event.target.value as Language)}>{(Object.keys(languageLabels) as Language[]).map(code=><option key={code} value={code}>{languageLabels[code]}</option>)}</select></label>
           <button className="signal-action">✦ AgencyAI</button>
           <button className="quiet-action">{t('common.inbox')}</button>
-          <button className="primary">+ {t('common.addClient')}</button>
         </div>
       </header>
       <div className="page">{children}</div>
