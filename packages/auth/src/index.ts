@@ -6,6 +6,7 @@ export type AuthActivityRecord={id:string;action:string;createdAt:string|null;ip
 export type MfaFactor={id:string;friendly_name?:string;factor_type:string;status:string;created_at:string;updated_at:string};
 export type MfaEnrollment={id:string;type:string;totp:{qr_code:string;secret:string;uri:string}};
 export type AssuranceLevel={currentLevel:'aal1'|'aal2'|null;nextLevel:'aal1'|'aal2'|null;currentAuthenticationMethods:Array<{method:string;timestamp:number}>};
+export type OAuthProvider='google'|'azure';
 
 let browserClient:SupabaseClient|null=null;
 export function hasSupabaseEnvironment(){return Boolean(import.meta.env.VITE_SUPABASE_URL&&import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)}
@@ -14,6 +15,8 @@ export async function getCurrentSession():Promise<Session|null>{if(!hasSupabaseE
 export function onAuthStateChange(callback:(session:Session|null,event:string)=>void){if(!hasSupabaseEnvironment())return()=>{};const{data}=getSupabaseBrowserClient().auth.onAuthStateChange((event:string,session:Session|null)=>callback(session,event));return()=>data.subscription.unsubscribe()}
 export async function signInWithPassword(email:string,password:string){const{error}=await getSupabaseBrowserClient().auth.signInWithPassword({email,password});if(error)throw error}
 export async function signInWithMagicLink(email:string,redirectTo:string){const{error}=await getSupabaseBrowserClient().auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo,shouldCreateUser:false}});if(error)throw error}
+export async function signInWithOAuthProvider(provider:OAuthProvider,redirectTo:string){const options=provider==='azure'?{redirectTo,scopes:'email openid profile'}:{redirectTo};const{data,error}=await getSupabaseBrowserClient().auth.signInWithOAuth({provider,options});if(error)throw error;return data}
+export async function resendEmailConfirmation(email:string,redirectTo:string){const{error}=await getSupabaseBrowserClient().auth.resend({type:'signup',email,options:{emailRedirectTo:redirectTo}});if(error)throw error}
 export async function requestPasswordReset(email:string,redirectTo:string){const{error}=await getSupabaseBrowserClient().auth.resetPasswordForEmail(email,{redirectTo});if(error)throw error}
 export async function updatePassword(password:string){const{error}=await getSupabaseBrowserClient().auth.updateUser({password});if(error)throw error}
 export async function refreshCurrentSession(){const{data,error}=await getSupabaseBrowserClient().auth.refreshSession();if(error)throw error;return data.session}
