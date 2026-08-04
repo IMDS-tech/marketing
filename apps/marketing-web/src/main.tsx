@@ -10,6 +10,7 @@ import {ForbiddenPage} from './pages/ForbiddenPage';
 import {LoginPage} from './pages/LoginPage';
 import {NotFoundPage} from './pages/NotFoundPage';
 import './styles.css';
+import './auth.css';
 
 function Root(){const{configured,loading,session,workspace,error}=useAuth();if(loading)return <div className="center-screen">Loading workspace…</div>;if(configured&&!session)return <LoginPage/>;if(error&&!workspace)return <div className="center-screen error-card">{error}</div>;return <AppShell><Outlet/></AppShell>}
 const rootRoute=createRootRoute({component:Root,notFoundComponent:NotFoundPage});
