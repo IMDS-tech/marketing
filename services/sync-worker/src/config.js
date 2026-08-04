@@ -19,6 +19,8 @@ export function loadConfig() {
       idleMs: integer('WORKER_IDLE_MS', 5000, 250, 60000),
       chunkSize: integer('METRIC_UPSERT_CHUNK_SIZE', 500, 1, 2000),
       runOnce: process.env.WORKER_RUN_ONCE === 'true',
+      enqueueResync: process.env.WORKER_ENQUEUE_RESYNC === 'true',
+      resyncDate: process.env.WORKER_RESYNC_DATE?.trim() || null,
     },
   });
 }
