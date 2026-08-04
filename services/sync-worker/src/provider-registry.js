@@ -1,6 +1,7 @@
 import { MetaClient } from './providers/meta/meta-client.js';
 import { normalizeMetaSnapshot } from './providers/meta/normalize.js';
 import { GoogleAdsClient, normalizeGoogleAdsRows, Ga4Client, normalizeGa4Rows, SearchConsoleClient, normalizeSearchConsoleRows } from './providers/google/index.js';
+import { TikTokAdsClient, normalizeTikTokRows } from './providers/tiktok/tiktok-ads-client.js';
 
 function context(source) {
   return { agencyId: source.agency_id, clientId: source.client_id, dataSourceId: source.id, externalIdentifier: source.external_identifier, label: source.label };
@@ -47,6 +48,10 @@ export async function fetchProviderMetrics(source, credential, { dateFrom, dateT
   if (slug === 'search-console') {
     const client = new SearchConsoleClient({ accessToken: credential.access_token, fetchImpl });
     return normalizeSearchConsoleRows(await client.fetchSearchRows(source.external_identifier, { dateFrom, dateTo, signal }), context(source));
+  }
+  if (slug === 'tiktok-ads') {
+    const client = new TikTokAdsClient({ accessToken: credential.access_token, fetchImpl });
+    return normalizeTikTokRows(await client.fetchCampaignRows(source.external_identifier, { dateFrom, dateTo, signal }), context(source));
   }
   throw new Error(`Provider ${slug} is not implemented by this worker`);
 }
