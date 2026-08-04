@@ -1,0 +1,3 @@
+.page:has(.clients-empty) .page-heading .heading-actions button:last-child {
+  display: none;
+}
