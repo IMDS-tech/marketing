@@ -11,6 +11,7 @@ function retryDelay(job) {
 
 export class SyncWorker {
   constructor({ repository, credentials, workerId, idleMs = 5000, fetchImpl = fetch }) {
+    if (!workerId?.trim()) throw new Error('workerId is required');
     this.repository = repository;
     this.credentials = credentials;
     this.workerId = workerId;
@@ -21,20 +22,20 @@ export class SyncWorker {
   async runOnce({ signal } = {}) {
     const job = await this.repository.claimJob(this.workerId, { signal });
     if (!job) return false;
-    log('info', 'sync job claimed', { jobId: job.id, dataSourceId: job.data_source_id, attempt: job.attempts });
+    log('info', 'sync job claimed', { jobId: job.id, dataSourceId: job.data_source_id, attempt: job.attempts, workerId: this.workerId });
     try {
       const source = await this.repository.getDataSource(job.data_source_id, { signal });
       const credential = await this.credentials.get(source.credential_handle, source.integration_slug, { signal });
       const rows = await fetchProviderMetrics(source, credential, { dateFrom: job.period_from, dateTo: job.period_to, signal, fetchImpl: this.fetchImpl });
       const valid = rows.filter(row => row.metric_date && row.entity_id && Number.isFinite(Number(row.value)));
       const written = await this.repository.upsertMetrics(valid, { signal });
-      await this.repository.completeJob(job.id, rows.length, written, { provider: source.integration_slug, dropped_rows: rows.length - valid.length }, { signal });
-      log('info', 'sync job completed', { jobId: job.id, fetched: rows.length, written });
+      await this.repository.completeJob(job.id, this.workerId, rows.length, written, { provider: source.integration_slug, dropped_rows: rows.length - valid.length }, { signal });
+      log('info', 'sync job completed', { jobId: job.id, fetched: rows.length, written, workerId: this.workerId });
       return true;
     } catch (error) {
       const failure = failurePayload(error);
-      await this.repository.failJob(job.id, failure, retryDelay(job), { signal });
-      log('error', 'sync job failed', { jobId: job.id, ...failure });
+      await this.repository.failJob(job.id, this.workerId, failure, retryDelay(job), { signal });
+      log('error', 'sync job failed', { jobId: job.id, workerId: this.workerId, ...failure });
       return true;
     }
   }

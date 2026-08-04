@@ -46,15 +46,22 @@ export class MarketingRepository {
     return written;
   }
 
-  completeJob(jobId, fetchedRows, writtenRows, metadata, { signal } = {}) {
+  completeJob(jobId, workerId, fetchedRows, writtenRows, metadata, { signal } = {}) {
     return this.client.rpc('complete_marketing_sync_job', {
-      job_id: jobId, fetched_rows: fetchedRows, written_rows: writtenRows, run_metadata: metadata || {},
+      job_id: jobId,
+      worker_id: workerId,
+      fetched_rows: fetchedRows,
+      written_rows: writtenRows,
+      run_metadata: metadata || {},
     }, { signal });
   }
 
-  failJob(jobId, failure, retryDelaySeconds, { signal } = {}) {
+  failJob(jobId, workerId, failure, retryDelaySeconds, { signal } = {}) {
     return this.client.rpc('fail_marketing_sync_job', {
-      job_id: jobId, failure, retry_delay_seconds: retryDelaySeconds,
+      job_id: jobId,
+      worker_id: workerId,
+      failure,
+      retry_delay_seconds: retryDelaySeconds,
     }, { signal });
   }
 }
