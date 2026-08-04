@@ -1,0 +1,3 @@
+import {z} from 'zod';
+const schema=z.object({PORT:z.coerce.number().int().positive().default(4100),DATABASE_URL:z.string().url(),SUPABASE_URL:z.string().url(),APP_ORIGIN:z.string().url(),INTERNAL_SERVICE_TOKEN:z.string().min(24),CREDENTIAL_MASTER_KEY_BASE64:z.string().min(40),OAUTH_CALLBACK_BASE_URL:z.string().url(),GOOGLE_CLIENT_ID:z.string().optional(),GOOGLE_CLIENT_SECRET:z.string().optional(),META_CLIENT_ID:z.string().optional(),META_CLIENT_SECRET:z.string().optional(),TIKTOK_CLIENT_ID:z.string().optional(),TIKTOK_CLIENT_SECRET:z.string().optional()});
+export const config=schema.parse(process.env);

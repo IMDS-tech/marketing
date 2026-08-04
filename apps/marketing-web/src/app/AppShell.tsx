@@ -1,6 +1,7 @@
 import type {ReactNode} from 'react';
 import {Link,useRouterState} from '@tanstack/react-router';
 import {useAuth} from './AuthProvider';
+import {ConnectionOverlay} from '../components/ConnectionOverlay';
 
 export function AppShell({children}:{children:ReactNode}){const pathname=useRouterState({select:state=>state.location.pathname});const{workspace,switchAgency,signOut,configured}=useAuth();const user=workspace?.currentUser;const agency=workspace?.activeAgency;const activeClientId=workspace?.clients[0]?.id||'amanat-med';const initials=(user?.name||'IM').split(' ').map(part=>part[0]).join('').slice(0,2).toUpperCase();const sections=[
   {label:'Clients',to:'/'},{group:'PAID ADS'},
@@ -17,5 +18,5 @@ export function AppShell({children}:{children:ReactNode}){const pathname=useRout
     <div className="sidebar-bottom"><div className="setup-card"><div><span>Account Setup</span><strong>40%</strong></div><div className="progress"><span/></div><small>2 of 5 steps completed</small></div><div className="account-card"><div className="avatar">{initials}</div><div><strong>{user?.name||'Demo User'}</strong><span>{agency?.role||'demo'}</span></div>{configured?<button onClick={()=>void signOut()} title="Logout">↪</button>:<button title="Demo mode">⋯</button>}</div></div>
   </aside>
   <main className="main"><header className="topbar"><div><span className="crumb">{agency?.name||'Workspace'}</span><h1>Marketing Platform</h1></div><div className="top-actions"><button>✦ AgencyAI</button><button>Inbox</button><button className="primary">Add Client</button></div></header><div className="page">{children}</div></main>
-  <aside className="right-rail"><button title="AgencyAI">✦</button><button title="Inbox">✉</button><button title="MCP Setup">⌘</button></aside>
+  <aside className="right-rail"><button title="AgencyAI">✦</button><button title="Inbox">✉</button><button title="MCP Setup">⌘</button></aside><ConnectionOverlay/>
 </div>}
