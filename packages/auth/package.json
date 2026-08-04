@@ -1,1 +1,1 @@
-{"name":"@imds/auth","version":"0.1.0","private":true,"type":"module","exports":{".":"./src/index.ts"},"dependencies":{"@supabase/supabase-js":"2.49.1","@imds/api-client":"workspace:*"},"scripts":{"check":"node -e \"process.exit(0)\"","test":"node --test"}}
+{"name":"@imds/auth","version":"0.1.0","private":true,"type":"module","exports":{".":"./src/index.ts"},"dependencies":{"@supabase/supabase-js":"2.49.1","@imds/api-client":"workspace:*"},"scripts":{"check":"node -e \"process.exit(0)\"","test":"node --experimental-strip-types --test src/*.test.ts"}}
