@@ -5,6 +5,7 @@ import {createRootRoute,createRoute,createRouter,Outlet,RouterProvider} from '@t
 import {AppShell} from './app/AppShell';
 import {AuthProvider,useAuth} from './app/AuthProvider';
 import {ClientsPage} from './pages/ClientsPage';
+import {DataSourcesPage} from './pages/DataSourcesPage';
 import {EmptySectionPage} from './pages/EmptySectionPage';
 import {ForbiddenPage} from './pages/ForbiddenPage';
 import {LoginPage} from './pages/LoginPage';
@@ -19,7 +20,7 @@ const clientsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/',component:
 const reportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/reports',component:()=> <EmptySectionPage title="Reports"/>});
 const rollupsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/rollups',component:()=> <EmptySectionPage title="Roll-Ups"/>});
 const kpisRoute=createRoute({getParentRoute:()=>rootRoute,path:'/kpis',component:()=> <EmptySectionPage title="KPIs"/>});
-const dataRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data',component:()=> <EmptySectionPage title="Data"/>});
+const dataRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data',component:DataSourcesPage});
 const templatesRoute=createRoute({getParentRoute:()=>rootRoute,path:'/templates',component:()=> <EmptySectionPage title="Templates"/>});
 const exportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/exports',component:()=> <EmptySectionPage title="Exports"/>});
 const metaCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/meta-ads/campaigns',component:MetaAdsCampaignsPage});
