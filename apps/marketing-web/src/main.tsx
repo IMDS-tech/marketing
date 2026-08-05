@@ -18,7 +18,14 @@ import {MetaAdsCampaignsPage,TikTokAdsCampaignsPage} from './pages/integrations/
 import {AgencyConnectionsPage,ClientDataSourcesPage,ConnectionManagerPage,IntegrationSchemaPage,SyncHealthPage} from './pages/integrations/IntegrationsWorkspacePage';
 import {AuthenticationPage} from './pages/platform/AuthenticationPage';
 import {WorkspacePage} from './pages/platform/WorkspacePage';
-import './styles.css';import './module-navigation.css';import './auth.css';
+import {ReportDirectoryPage} from './pages/reports/ReportDirectoryPage';
+import './styles.css';
+import './module-navigation.css';
+import './auth.css';
+import './platform-core.css';
+
+document.documentElement.dataset.release='platform-core-ui-v2';
+
 function Root(){const{configured,loading,session,workspace,error,recoveryMode}=useAuth();const{t}=useI18n();if(loading)return <div className="center-screen">{t('common.loadingWorkspace')}</div>;if(configured&&recoveryMode)return <LoginPage/>;if(configured&&!session)return <LoginPage/>;if(error&&!workspace)return <div className="center-screen error-card">{error}</div>;return <AppShell><Outlet/></AppShell>}
 const rootRoute=createRootRoute({component:Root,notFoundComponent:NotFoundPage});
 const clientsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/',component:ClientsWorkspacePage});
@@ -27,7 +34,7 @@ const clientGroupsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/clients
 const clientProfileRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/profile',component:ClientsWorkspacePage});
 const clientUsersRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/users',component:ClientsWorkspacePage});
 const clientSettingsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/settings',component:ClientsWorkspacePage});
-const reportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/reports',component:()=> <EmptySectionPage titleKey="nav.reports"/>});
+const reportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/reports',component:ReportDirectoryPage});
 const rollupsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/rollups',component:()=> <EmptySectionPage titleKey="nav.rollups"/>});
 const kpisRoute=createRoute({getParentRoute:()=>rootRoute,path:'/kpis',component:()=> <EmptySectionPage titleKey="nav.kpis"/>});
 const dataRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data',component:DataSourcesPage});
