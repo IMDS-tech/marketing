@@ -51,7 +51,20 @@ jobs:
       - run: node --check scripts/e2e-smoke.mjs
       - run: node scripts/validate-port-matrix.mjs
       - run: node scripts/validate-openapi.mjs
-      - run: docker compose -f docker-compose.dev.yml config --quiet
+      - name: Prepare non-secret compose env files
+        run: |
+          cp services/platform-core-service/.env.example services/platform-core-service/.env
+          cp services/clients-api/.env.example services/clients-api/.env
+          cp services/integration-service/.env.example services/integration-service/.env
+          cp services/report-api/.env.example services/report-api/.env
+          cp services/notification-worker/.env.example services/notification-worker/.env
+          cp services/ai-service/.env.example services/ai-service/.env
+          cp services/search-indexer/.env.example services/search-indexer/.env
+          cp services/sync-worker/.env.example services/sync-worker/.env
+      - name: Validate compose topology
+        env:
+          VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+        run: docker compose -f docker-compose.dev.yml config --quiet
 
   database:
     name: Clean Supabase reset and RLS tests
