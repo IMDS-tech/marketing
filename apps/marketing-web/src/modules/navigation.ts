@@ -22,6 +22,12 @@ const implementedRoutes:Record<string,(clientId:string)=>string>={
   'rollup-dashboards':()=>'/rollups',
   'kpi-management':()=>'/kpis',
   'export-center':()=>'/exports',
+  'platform-core-service':()=>'/backend/platform-core-service',
+  'integration-service':()=>'/backend/integration-service',
+  'report-api':()=>'/backend/report-api',
+  'notification-worker':()=>'/backend/notification-worker',
+  'ai-service':()=>'/backend/ai-service',
+  'search-indexer':()=>'/backend/search-indexer',
 };
 
 export function getModuleHref(module:ModuleDefinition,clientId:string){return implementedRoutes[module.id]?.(clientId)??`/platform/module/${module.id}`}
