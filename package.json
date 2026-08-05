@@ -7,7 +7,7 @@
   "workspaces": ["apps/*","packages/*","services/*"],
   "scripts": {
     "postinstall": "cd apps/marketing-web && bun run build",
-    "build": "pnpm --filter @imds/integration-service build && pnpm --filter @imds/marketing-web build",
+    "build": "pnpm -r --if-present build",
     "dev": "pnpm --filter @imds/marketing-web dev",
     "deploy": "pnpm build && wrangler deploy",
     "check": "pnpm -r check",

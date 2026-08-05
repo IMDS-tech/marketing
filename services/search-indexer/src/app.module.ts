@@ -1,0 +1,11 @@
+import {BadRequestException,Body,Controller,Get,Headers,Module,Post,Query} from '@nestjs/common';
+import {z} from 'zod';
+import {Db} from './db.js';
+import {AccessService,verifyInternal,verifyUserJwt} from './security.js';
+import {IndexerService} from './indexer.service.js';
+import {config} from './config.js';
+const uuid=z.string().uuid();const jobSchema=z.object({agencyId:uuid,clientId:uuid.nullable().optional(),entityType:z.string().trim().min(1).max(80),entityId:z.string().trim().min(1).max(300),operation:z.enum(['upsert','delete','rebuild']).default('upsert'),payload:z.record(z.string(),z.unknown()).default({})});const parse=<T>(schema:z.ZodType<T>,value:unknown)=>{const result=schema.safeParse(value);if(!result.success)throw new BadRequestException(result.error.flatten());return result.data};
+@Controller('health')class HealthController{@Get()health(){return{ok:true,service:'search-indexer',workerId:config.WORKER_ID,enabled:config.INDEXER_ENABLED}}}
+@Controller('v1/search')class SearchController{constructor(private readonly indexer:IndexerService,private readonly access:AccessService){}@Get()async search(@Headers('authorization')auth:string,@Query('agencyId')agencyId:string,@Query('q')query:string,@Query('clientId')clientId?:string,@Query('limit')limit?:string){const user=await verifyUserJwt(auth);const a=parse(uuid,agencyId);await this.access.require(user.userId,a,'search.read');const c=clientId?parse(uuid,clientId):null;if(c)await this.access.requireClient(user.userId,a,c);if(!query?.trim())return{items:[]};return this.indexer.search(a,query.trim(),c,Number(limit||30))}}
+@Controller('internal/v1/search-index')class InternalController{constructor(private readonly indexer:IndexerService){}@Post()enqueue(@Headers('authorization')auth:string,@Body()body:unknown){verifyInternal(auth);return this.indexer.enqueue(parse(jobSchema,body))}@Post('rebuild')rebuild(@Headers('authorization')auth:string,@Body()body:unknown){verifyInternal(auth);const{agencyId}=parse(z.object({agencyId:uuid}),body);return this.indexer.enqueue({agencyId,entityType:'agency',entityId:agencyId,operation:'rebuild'})}}
+@Module({controllers:[HealthController,SearchController,InternalController],providers:[Db,AccessService,IndexerService]})export class AppModule{}
