@@ -11,10 +11,11 @@ export async function verifyUserJwt(authorization?:string){
   return {userId:payload.sub,email:String(payload.email??'')};
 }
 
+type ReportPermission='reports.read'|'reports.manage'|'analytics.read';
 @Injectable()
 export class AccessService{
   constructor(private readonly db:Db){}
-  async requirePermission(userId:string,agencyId:string,permission:'reports.read'|'reports.manage'){
+  async requirePermission(userId:string,agencyId:string,permission:ReportPermission){
     const result=await this.db.query<{role:string;permissions:string[]}>(
       `select role::text,permissions from public.agency_memberships
        where agency_id=$1 and user_id=$2 and status='active' limit 1`,[agencyId,userId]);
