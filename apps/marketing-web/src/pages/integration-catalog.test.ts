@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {filterConnectorCatalog,getConnectorAvailability} from './integration-catalog.ts';
+import type {ConnectorDefinition} from '@imds/integrations';
+import {filterConnectorCatalog,getConnectorAvailability} from './integration-catalog';
 
-const connectors=[
+const connectors:ConnectorDefinition[]=[
   {slug:'meta-ads',name:'Meta Ads',category:'paid_ads',authType:'oauth2',scopes:[],lifecycle:'beta'},
   {slug:'ga4',name:'Google Analytics 4',category:'analytics',authType:'oauth2',scopes:[],lifecycle:'beta'},
   {slug:'stripe',name:'Stripe',category:'ecommerce',authType:'api_key',scopes:[],lifecycle:'planned'},
-] as const;
+];
 
 test('catalog filters by query and category',()=>{
   assert.deepEqual(filterConnectorCatalog(connectors,'google','analytics',false).map(item=>item.slug),['ga4']);
