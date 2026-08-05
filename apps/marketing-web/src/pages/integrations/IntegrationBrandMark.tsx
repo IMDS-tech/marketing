@@ -18,6 +18,7 @@ export function integrationBrandStyle(slug:string,category:ConnectorCategory):CS
 }
 
 type Props={slug:string;name:string;category:ConnectorCategory};
+const logoStyle:CSSProperties={width:34,height:34,objectFit:'contain',display:'block'};
 
 export function IntegrationBrandMark({slug,name}:Props){
   const brand=getIntegrationBrand(slug);
@@ -29,5 +30,5 @@ export function IntegrationBrandMark({slug,name}:Props){
 
   if(!logo||failed)return <span className="connector-brand-mark connector-brand-fallback" aria-label={`${name} logo`}>{letters}</span>;
 
-  return <span className="connector-brand-mark"><img src={logo} alt={`${name} logo`} loading="lazy" referrerPolicy="no-referrer" onError={()=>{if(fallback&&logo!==fallback)setLogo(fallback);else setFailed(true)}}/></span>;
+  return <span className="connector-brand-mark"><img style={logoStyle} src={logo} alt={`${name} logo`} loading="lazy" referrerPolicy="no-referrer" onError={()=>{if(fallback&&logo!==fallback)setLogo(fallback);else setFailed(true)}}/></span>;
 }
