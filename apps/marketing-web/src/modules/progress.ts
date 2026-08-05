@@ -33,7 +33,10 @@ const progress:Record<string,ModuleProgressRecord>={
   permissions:{status:'in_progress'},
   audit:{status:'in_progress'},
   'client-directory':{status:'in_progress'},
-  'integration-catalog':{status:'in_progress'},
+  'integration-catalog':{
+    status:'complete',
+    note:'Live tenant-scoped catalog, active-client OAuth connect, manage/reconnect flows, permissions, states and tests are complete.',
+  },
   'connection-manager':{status:'in_progress'},
   'data-source-management':{status:'in_progress'},
   'sync-health':{status:'in_progress'},
