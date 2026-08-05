@@ -17,6 +17,7 @@ import {NotFoundPage} from './pages/NotFoundPage';
 import {MetaAdsCampaignsPage,TikTokAdsCampaignsPage} from './pages/integrations/PaidAdsCampaignsPage';
 import {AuthenticationPage} from './pages/platform/AuthenticationPage';
 import {WorkspacePage} from './pages/platform/WorkspacePage';
+import {ReportBuilderPage} from './pages/reports/ReportBuilderPage';
 import {ReportDirectoryPage} from './pages/reports/ReportDirectoryPage';
 import './styles.css';
 import './module-navigation.css';
@@ -26,6 +27,7 @@ function Root(){const{configured,loading,session,workspace,error,recoveryMode}=u
 const rootRoute=createRootRoute({component:Root,notFoundComponent:NotFoundPage});
 const clientsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/',component:ClientsPage});
 const reportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/reports',component:ReportDirectoryPage});
+const reportBuilderRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/reports/$reportId',component:ReportBuilderPage});
 const rollupsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/rollups',component:()=> <EmptySectionPage titleKey="nav.rollups"/>});
 const kpisRoute=createRoute({getParentRoute:()=>rootRoute,path:'/kpis',component:()=> <EmptySectionPage titleKey="nav.kpis"/>});
 const dataRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data',component:DataSourcesPage});
@@ -39,7 +41,7 @@ const dashboardRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$cl
 const metaCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/meta-ads/campaigns',component:MetaAdsCampaignsPage});
 const tiktokCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/tiktok-ads/campaigns',component:TikTokAdsCampaignsPage});
 const forbiddenRoute=createRoute({getParentRoute:()=>rootRoute,path:'/403',component:ForbiddenPage});
-const router=createRouter({routeTree:rootRoute.addChildren([clientsRoute,reportsRoute,rollupsRoute,kpisRoute,dataRoute,templatesRoute,exportsRoute,authenticationRoute,workspaceRoute,modulesRoute,moduleRoute,dashboardRoute,metaCampaignsRoute,tiktokCampaignsRoute,forbiddenRoute])});
+const router=createRouter({routeTree:rootRoute.addChildren([clientsRoute,reportsRoute,reportBuilderRoute,rollupsRoute,kpisRoute,dataRoute,templatesRoute,exportsRoute,authenticationRoute,workspaceRoute,modulesRoute,moduleRoute,dashboardRoute,metaCampaignsRoute,tiktokCampaignsRoute,forbiddenRoute])});
 declare module '@tanstack/react-router'{interface Register{router:typeof router}}
 const queryClient=new QueryClient({defaultOptions:{queries:{staleTime:30000,retry:1}}});
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><I18nProvider><QueryClientProvider client={queryClient}><AuthProvider><RouterProvider router={router}/></AuthProvider></QueryClientProvider></I18nProvider></React.StrictMode>);
