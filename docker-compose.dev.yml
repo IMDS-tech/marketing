@@ -1,0 +1,111 @@
+name: imds-marketing
+
+x-api-common: &api-common
+  restart: unless-stopped
+  extra_hosts:
+    - host.docker.internal:host-gateway
+  networks: [imds]
+
+services:
+  marketing-web:
+    build:
+      context: .
+      dockerfile: apps/marketing-web/Dockerfile
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-http://127.0.0.1:54321}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+        VITE_PLATFORM_CORE_SERVICE_URL: ${VITE_PLATFORM_CORE_SERVICE_URL:-http://127.0.0.1:4300}
+        VITE_CLIENTS_API_URL: ${VITE_CLIENTS_API_URL:-http://127.0.0.1:4102}
+        VITE_INTEGRATION_SERVICE_URL: ${VITE_INTEGRATION_SERVICE_URL:-http://127.0.0.1:4100}
+        VITE_REPORT_API_URL: ${VITE_REPORT_API_URL:-http://127.0.0.1:4200}
+        VITE_AI_SERVICE_URL: ${VITE_AI_SERVICE_URL:-http://127.0.0.1:4304}
+        VITE_SEARCH_INDEXER_URL: ${VITE_SEARCH_INDEXER_URL:-http://127.0.0.1:4305}
+        VITE_ENABLE_DEMO_FALLBACK: "false"
+    ports: ["5173:8080"]
+    networks: [imds]
+    depends_on:
+      platform-core-service: {condition: service_healthy}
+      clients-api: {condition: service_healthy}
+      integration-service: {condition: service_healthy}
+      report-api: {condition: service_healthy}
+
+  platform-core-service:
+    <<: *api-common
+    build: {context: ., dockerfile: services/platform-core-service/Dockerfile}
+    env_file: services/platform-core-service/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:54322/postgres
+      SUPABASE_URL: http://host.docker.internal:54321
+      APP_ORIGIN: http://127.0.0.1:5173
+    ports: ["4300:4300"]
+
+  clients-api:
+    <<: *api-common
+    build: {context: ., dockerfile: services/clients-api/Dockerfile}
+    env_file: services/clients-api/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:54322/postgres
+      SUPABASE_URL: http://host.docker.internal:54321
+      CORS_ORIGIN: http://127.0.0.1:5173
+    ports: ["4102:4102"]
+
+  integration-service:
+    <<: *api-common
+    build: {context: ., dockerfile: services/integration-service/Dockerfile}
+    env_file: services/integration-service/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:54322/postgres
+      SUPABASE_URL: http://host.docker.internal:54321
+      APP_ORIGIN: http://127.0.0.1:5173
+      OAUTH_CALLBACK_BASE_URL: http://127.0.0.1:4100/v1/oauth
+    ports: ["4100:4100"]
+
+  report-api:
+    <<: *api-common
+    build: {context: ., dockerfile: services/report-api/Dockerfile}
+    env_file: services/report-api/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:54322/postgres
+      SUPABASE_URL: http://host.docker.internal:54321
+      APP_ORIGIN: http://127.0.0.1:5173
+    ports: ["4200:4200"]
+
+  ai-service:
+    <<: *api-common
+    build: {context: ., dockerfile: services/ai-service/Dockerfile}
+    env_file: services/ai-service/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:54322/postgres
+      SUPABASE_URL: http://host.docker.internal:54321
+      APP_ORIGIN: http://127.0.0.1:5173
+    ports: ["4304:4304"]
+
+  search-indexer:
+    <<: *api-common
+    build: {context: ., dockerfile: services/search-indexer/Dockerfile}
+    env_file: services/search-indexer/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:54322/postgres
+      SUPABASE_URL: http://host.docker.internal:54321
+      APP_ORIGIN: http://127.0.0.1:5173
+    ports: ["4305:4305"]
+
+  sync-worker:
+    <<: *api-common
+    build: {context: ., dockerfile: services/sync-worker/Dockerfile}
+    env_file: services/sync-worker/.env
+    environment:
+      SUPABASE_URL: http://host.docker.internal:54321
+      INTEGRATION_SERVICE_URL: http://integration-service:4100
+    depends_on:
+      integration-service: {condition: service_healthy}
+
+  notification-worker:
+    <<: *api-common
+    build: {context: ., dockerfile: services/notification-worker/Dockerfile}
+    env_file: services/notification-worker/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:54322/postgres
+
+networks:
+  imds: {driver: bridge}
