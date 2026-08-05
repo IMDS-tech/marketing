@@ -25,7 +25,7 @@ Backend runtime secrets stay in the hosting platform secret manager and never us
 
 ## Cloudflare Workers Builds
 
-This repository is a pnpm monorepo. Configure the connected `imds-marketing` Worker under **Settings → Build** with these exact values:
+This repository is a pnpm monorepo. Configure the connected `marketing` Worker under **Settings → Build** with these exact values:
 
 ```text
 Root directory: /
@@ -42,7 +42,7 @@ SKIP_DEPENDENCY_INSTALL=true
 
 The build script pins pnpm 10.14.0, installs the workspace with pnpm and creates `apps/marketing-web/dist` before Wrangler reads `assets.directory`. The repository also pins Node.js through `.node-version`.
 
-Do not leave the Build command empty. Workers Builds performs its build and deploy as two separate steps and does not currently execute Wrangler custom-build configuration from `wrangler.jsonc`. The default deploy command alone cannot create the Vite `dist` directory.
+Do not leave the Build command empty. Workers Builds performs its build and deploy as two separate steps. The default deploy command alone cannot create the Vite `dist` directory.
 
 Required frontend build variables:
 
@@ -55,8 +55,9 @@ VITE_INTEGRATION_SERVICE_URL
 VITE_REPORT_API_URL
 VITE_AI_SERVICE_URL
 VITE_SEARCH_INDEXER_URL
-VITE_ENABLE_DEMO_FALLBACK=false
 ```
+
+The production frontend has no demo fallback. Missing Supabase configuration stops the application with a configuration error, and missing service URLs surface explicit API configuration errors instead of synthetic data.
 
 After changing Build settings, trigger a new commit or use **Retry build**. A retry uses the currently saved Build settings. The expected sequence in the log is `pnpm cloudflare:build`, creation of `apps/marketing-web/dist/index.html`, then `pnpm cloudflare:deploy`.
 
