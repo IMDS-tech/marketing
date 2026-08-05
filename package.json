@@ -3,10 +3,11 @@
   "version": "0.3.0",
   "private": true,
   "packageManager": "pnpm@10.14.0",
-  "engines": { "node": ">=22" },
+  "engines": { "node": ">=22 <23" },
   "workspaces": ["apps/*", "packages/*", "services/*"],
   "scripts": {
     "build": "pnpm -r --if-present build",
+    "build:web": "pnpm --filter @imds/marketing-web build",
     "check": "pnpm -r check",
     "test": "pnpm -r test",
     "validate": "pnpm check && pnpm test && pnpm build && pnpm validate:ports && pnpm validate:openapi",
@@ -23,7 +24,10 @@
     "supabase:reset": "pnpm dlx supabase@2.109.1 db reset --local",
     "supabase:status": "pnpm dlx supabase@2.109.1 status",
     "supabase:test": "pnpm dlx supabase@2.109.1 test db",
-    "deploy": "pnpm build && wrangler deploy"
+    "cloudflare:build": "corepack enable && corepack prepare pnpm@10.14.0 --activate && pnpm install --no-frozen-lockfile --ignore-scripts && pnpm build:web",
+    "cloudflare:deploy": "pnpm exec wrangler deploy",
+    "deploy:dry-run": "pnpm build:web && pnpm exec wrangler deploy --dry-run --outdir .wrangler-deploy-check",
+    "deploy": "pnpm build:web && pnpm exec wrangler deploy"
   },
   "devDependencies": {
     "wrangler": "4.118.0"

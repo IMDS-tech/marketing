@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "imds-marketing",
+  "name": "marketing",
   "compatibility_date": "2026-08-04",
   "assets": {
     "directory": "./apps/marketing-web/dist",
