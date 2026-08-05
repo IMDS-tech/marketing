@@ -1,19 +1,32 @@
 import {useState,type CSSProperties}from'react';
 import type{ConnectorCategory}from'@imds/integrations';
 import{faviconUrl,getIntegrationBrand,simpleIconUrl}from'./integrationBrands';
+import'./integrationBrandColors.css';
 
 const categoryColors:Record<ConnectorCategory,string>={analytics:'#7C3AED',paid_ads:'#2563EB',seo:'#059669',social:'#DB2777',ecommerce:'#16A34A',email:'#EA580C',call_tracking:'#0891B2',local:'#CA8A04',database:'#475569'};
 
+function contrastColor(hex:string):'#000000'|'#FFFFFF'{
+  const value=hex.replace('#','');
+  const red=parseInt(value.slice(0,2),16);
+  const green=parseInt(value.slice(2,4),16);
+  const blue=parseInt(value.slice(4,6),16);
+  const luminance=(red*299+green*587+blue*114)/1000;
+  return luminance>=150?'#000000':'#FFFFFF';
+}
+
 export function integrationBrandStyle(slug:string,category:ConnectorCategory):CSSProperties{
-  const accent=getIntegrationBrand(slug)?.color??categoryColors[category];
+  const brandColor=getIntegrationBrand(slug)?.color??categoryColors[category];
+  const contrast=contrastColor(brandColor);
   return {
-    '--connector-accent':accent,
-    '--connector-surface':`color-mix(in srgb, ${accent} 6%, var(--surface,#fff))`,
-    '--connector-border':`color-mix(in srgb, ${accent} 22%, var(--border,#e5e7eb))`,
-    '--connector-foreground':`color-mix(in srgb, ${accent} 54%, var(--foreground,#111827))`,
-    '--connector-logo-surface':`color-mix(in srgb, ${accent} 10%, #fff)`,
-    '--connector-logo-foreground':accent,
-    '--connector-shadow':`0 13px 30px color-mix(in srgb, ${accent} 10%, rgba(15,23,42,.07))`,
+    '--connector-accent':brandColor,
+    '--connector-surface':brandColor,
+    '--connector-border':brandColor,
+    '--connector-foreground':contrast,
+    '--connector-logo-surface':contrast,
+    '--connector-logo-foreground':brandColor,
+    '--connector-button-background':contrast,
+    '--connector-button-foreground':brandColor,
+    '--connector-shadow':'0 13px 30px rgba(15,23,42,.18)',
   }as CSSProperties;
 }
 
