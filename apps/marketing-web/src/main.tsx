@@ -20,6 +20,7 @@ import {WorkspacePage} from './pages/platform/WorkspacePage';
 import './styles.css';
 import './module-navigation.css';
 import './auth.css';
+import './platform-core.css';
 
 function Root(){const{configured,loading,session,workspace,error,recoveryMode}=useAuth();const{t}=useI18n();if(loading)return <div className="center-screen">{t('common.loadingWorkspace')}</div>;if(configured&&recoveryMode)return <LoginPage/>;if(configured&&!session)return <LoginPage/>;if(error&&!workspace)return <div className="center-screen error-card">{error}</div>;return <AppShell><Outlet/></AppShell>}
 const rootRoute=createRootRoute({component:Root,notFoundComponent:NotFoundPage});
