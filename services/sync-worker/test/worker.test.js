@@ -51,5 +51,5 @@ test('worker writes only validated tenant-safe rows and stores quality metadata'
   const worker=new SyncWorker({repository,credentials,workerId:'worker-test',fetchImpl});
   await worker.runOnce();
   assert.ok(writes.length>0);assert.ok(writes.every(row=>row.agency_id==='a'&&row.client_id==='c'));
-  const metadata=completions[0][5];assert.equal(metadata.data_quality.rejected,0);assert.equal(metadata.provider,'meta-ads');
+  const metadata=completions[0][4];assert.equal(metadata.data_quality.rejected,0);assert.equal(metadata.provider,'meta-ads');
 });
