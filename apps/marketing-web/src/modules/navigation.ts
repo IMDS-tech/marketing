@@ -4,6 +4,10 @@ import type {ModuleDefinition} from './types';
 const implementedRoutes:Record<string,(clientId:string)=>string>={
   authentication:()=>'/platform/authentication',
   workspace:()=>'/platform/workspace',
+  'agency-profile':()=>'/settings/company',
+  'users-teams':()=>'/settings/users',
+  billing:()=>'/settings/billing',
+  'agency-onboarding':()=>'/onboarding',
   'client-directory':()=> '/',
   'client-creation':()=>'/clients/new',
   'client-profile':clientId=>`/client/${clientId}/profile`,
