@@ -17,6 +17,7 @@ import {NotFoundPage} from './pages/NotFoundPage';
 import {MetaAdsCampaignsPage,TikTokAdsCampaignsPage} from './pages/integrations/PaidAdsCampaignsPage';
 import {AuthenticationPage} from './pages/platform/AuthenticationPage';
 import {WorkspacePage} from './pages/platform/WorkspacePage';
+import {ReportDirectoryPage} from './pages/reports/ReportDirectoryPage';
 import './styles.css';
 import './module-navigation.css';
 import './auth.css';
@@ -24,7 +25,7 @@ import './auth.css';
 function Root(){const{configured,loading,session,workspace,error,recoveryMode}=useAuth();const{t}=useI18n();if(loading)return <div className="center-screen">{t('common.loadingWorkspace')}</div>;if(configured&&recoveryMode)return <LoginPage/>;if(configured&&!session)return <LoginPage/>;if(error&&!workspace)return <div className="center-screen error-card">{error}</div>;return <AppShell><Outlet/></AppShell>}
 const rootRoute=createRootRoute({component:Root,notFoundComponent:NotFoundPage});
 const clientsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/',component:ClientsPage});
-const reportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/reports',component:()=> <EmptySectionPage titleKey="nav.reports"/>});
+const reportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/reports',component:ReportDirectoryPage});
 const rollupsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/rollups',component:()=> <EmptySectionPage titleKey="nav.rollups"/>});
 const kpisRoute=createRoute({getParentRoute:()=>rootRoute,path:'/kpis',component:()=> <EmptySectionPage titleKey="nav.kpis"/>});
 const dataRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data',component:DataSourcesPage});
