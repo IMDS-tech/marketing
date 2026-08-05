@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildAuthRedirectUrl,parseAuthRedirectState,sanitizeAuthRedirectUrl} from './redirect-state.ts';
+import {buildAuthRedirectUrl,parseAuthRedirectState,sanitizeAuthRedirectUrl} from './redirect-state';
 
 test('builds OAuth redirect URL with flow marker',()=>{
   const url=buildAuthRedirectUrl('https://app.imds.tech','google','/');
