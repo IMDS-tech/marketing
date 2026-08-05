@@ -1,0 +1,5 @@
+import test from'node:test';import assert from'node:assert/strict';import{readFile}from'node:fs/promises';
+const page=await readFile(new URL('./AgencyManagementPage.tsx',import.meta.url),'utf8');const api=await readFile(new URL('../../agency-api.ts',import.meta.url),'utf8');const routes=await readFile(new URL('../../main.tsx',import.meta.url),'utf8');
+test('agency management exposes four live workspaces',()=>{for(const path of ['/settings/company','/settings/users','/settings/billing','/onboarding'])assert.ok(routes.includes(path),path)});
+test('agency management has profile users teams billing and onboarding actions',()=>{for(const name of ['saveAgency','inviteMember','updateMember','saveTeam','changeSubscription','cancelSubscription','setOnboardingStep'])assert.ok(page.includes(name),name)});
+test('agency api uses bearer token and platform core endpoint',()=>{assert.match(api,/VITE_PLATFORM_CORE_URL/);assert.match(api,/Bearer/);assert.doesNotMatch(api,/SERVICE_ROLE/)});
