@@ -23,6 +23,50 @@ Required variables:
 
 Backend runtime secrets stay in the hosting platform secret manager and never use a `VITE_` prefix.
 
+## Cloudflare Workers Builds
+
+This repository is a pnpm monorepo. Configure the connected `imds-marketing` Worker under **Settings → Build** with these exact values:
+
+```text
+Root directory: /
+Build command: pnpm cloudflare:build
+Deploy command: pnpm cloudflare:deploy
+Non-production deploy command: pnpm exec wrangler versions upload
+```
+
+Add this build variable:
+
+```text
+SKIP_DEPENDENCY_INSTALL=true
+```
+
+The build script pins pnpm 10.14.0, installs the workspace with pnpm and creates `apps/marketing-web/dist` before Wrangler reads `assets.directory`. The repository also pins Node.js through `.node-version`.
+
+Do not leave the Build command empty. Workers Builds performs its build and deploy as two separate steps and does not currently execute Wrangler custom-build configuration from `wrangler.jsonc`. The default deploy command alone cannot create the Vite `dist` directory.
+
+Required frontend build variables:
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_PLATFORM_CORE_SERVICE_URL
+VITE_CLIENTS_API_URL
+VITE_INTEGRATION_SERVICE_URL
+VITE_REPORT_API_URL
+VITE_AI_SERVICE_URL
+VITE_SEARCH_INDEXER_URL
+VITE_ENABLE_DEMO_FALLBACK=false
+```
+
+After changing Build settings, trigger a new commit or use **Retry build**. A retry uses the currently saved Build settings. The expected sequence in the log is `pnpm cloudflare:build`, creation of `apps/marketing-web/dist/index.html`, then `pnpm cloudflare:deploy`.
+
+Local verification:
+
+```bash
+pnpm install --no-frozen-lockfile --ignore-scripts
+pnpm deploy:dry-run
+```
+
 ## Sequence
 
 1. Merge only after application, clean-database and container CI are green.

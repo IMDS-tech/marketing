@@ -14,6 +14,8 @@ on:
       - 'package.json'
       - 'pnpm-workspace.yaml'
       - 'tsconfig.base.json'
+      - 'wrangler.jsonc'
+      - '.node-version'
       - '.github/workflows/frontend-ci.yml'
 
 permissions:
@@ -35,7 +37,7 @@ jobs:
           version: 10.14.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .node-version
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --ignore-scripts
       - name: Typecheck workspaces
@@ -44,3 +46,7 @@ jobs:
         run: pnpm test
       - name: Build production applications
         run: pnpm build
+      - name: Verify frontend artifact
+        run: test -f apps/marketing-web/dist/index.html
+      - name: Verify Wrangler static-assets deployment
+        run: pnpm exec wrangler deploy --dry-run --outdir .wrangler-deploy-check
