@@ -7,6 +7,8 @@ import {verifyUserJwt} from './security.js';
 import type {Provider} from './providers.js';
 import {ConnectionsController} from './connections.controller.js';
 import {ConnectionsService} from './connections.service.js';
+import {IntegrationsController} from './integrations.controller.js';
+import {IntegrationsService} from './integrations.service.js';
 
 async function user(auth?:string){
   if(!auth?.startsWith('Bearer '))throw new UnauthorizedException();
@@ -59,7 +61,7 @@ class InternalController{
 }
 
 @Module({
-  controllers:[OAuthController,ConnectionsController,InternalController],
-  providers:[Db,OAuthService,ConnectionsService],
+  controllers:[OAuthController,ConnectionsController,IntegrationsController,InternalController],
+  providers:[Db,OAuthService,ConnectionsService,IntegrationsService],
 })
 export class AppModule{}

@@ -2,6 +2,7 @@ import {BadRequestException,Body,Controller,Get,Headers,Module,Param,Patch,Post,
 import {z} from 'zod';
 import {Db} from './db.js';
 import {AccessService,verifyUserJwt} from './security.js';
+import {ReportBuilderController} from './report-builder.controller.js';
 
 const status=z.enum(['draft','scheduled','sent','failed','archived']);
 const createReportSchema=z.object({agencyId:z.string().uuid(),clientId:z.string().uuid().nullable().optional(),folderId:z.string().uuid().nullable().optional(),name:z.string().trim().min(1).max(160),description:z.string().max(2000).default(''),status:status.default('draft'),schedule:z.record(z.string(),z.unknown()).default({}),recipients:z.array(z.unknown()).default([]),nextRunAt:z.string().datetime().nullable().optional()});
@@ -47,5 +48,5 @@ class ReportController{
   async archive(@Headers('authorization')auth:string,@Param('id')id:string,@Body()body:unknown){const user=await verifyUserJwt(auth);parse(z.string().uuid(),id);const {agencyId}=parse(z.object({agencyId:z.string().uuid()}),body);await this.access.requirePermission(user.userId,agencyId,'reports.manage');const result=await this.db.query<ReportRow>(`update public.reports set status='archived',updated_by=$3 where id=$1 and agency_id=$2 returning id,agency_id,client_id,folder_id,name,description,status,schedule,recipients,last_generated_at,next_run_at,created_at,updated_at,null::text client_name,null::text folder_name`,[id,agencyId,user.userId]);if(!result.rows[0])throw new BadRequestException('REPORT_NOT_FOUND');return mapReport(result.rows[0])}
 }
 
-@Module({controllers:[HealthController,FolderController,ReportController],providers:[Db,AccessService]})
+@Module({controllers:[HealthController,FolderController,ReportController,ReportBuilderController],providers:[Db,AccessService]})
 export class AppModule{}
