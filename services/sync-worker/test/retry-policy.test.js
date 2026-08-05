@@ -1,0 +1,7 @@
+import test from'node:test';import assert from'node:assert/strict';
+import{classifyProviderError,retryDelaySeconds,failurePayload}from'../src/retry-policy.js';
+
+test('authentication failures require reconnect and are not retried',()=>{const error=Object.assign(new Error('expired'),{status:401,code:'invalid_token'});assert.deepEqual(classifyProviderError(error),{category:'authentication',retryable:false,status:401,code:'invalid_token'});assert.equal(retryDelaySeconds({id:'j',attempts:1},error),0)});
+test('rate limits honor provider retry-after',()=>{const error=Object.assign(new Error('rate limited'),{status:429,retryAfter:75});assert.equal(classifyProviderError(error).category,'rate_limit');assert.equal(retryDelaySeconds({id:'j',attempts:3},error),75)});
+test('transient retries use bounded deterministic exponential backoff',()=>{const error=Object.assign(new Error('socket timeout'),{code:'ETIMEDOUT'});const job={id:'job-a',attempts:4};const first=retryDelaySeconds(job,error);const second=retryDelaySeconds(job,error);assert.equal(first,second);assert.ok(first>=240&&first<=264);assert.ok(retryDelaySeconds({id:'job-a',attempts:20},error)<=3600)});
+test('failure payload contains operational category and attempt',()=>{const payload=failurePayload(Object.assign(new Error('upstream'),{status:503}),{attempts:2});assert.equal(payload.category,'upstream');assert.equal(payload.retryable,true);assert.equal(payload.attempt,2)});
