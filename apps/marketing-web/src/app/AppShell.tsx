@@ -1,5 +1,6 @@
-import type {ReactNode} from 'react';
+import {useEffect,useMemo,type ReactNode} from 'react';
 import {Link,useRouterState} from '@tanstack/react-router';
+import {recordWorkspaceRecentItem,updateWorkspacePreferences} from '@imds/auth';
 import {useI18n,type Language} from '../i18n/I18nProvider';
 import {moduleDomains} from '../modules/catalog';
 import {getModuleHref,isImplementedModule} from '../modules/navigation';
@@ -8,10 +9,11 @@ import {BrandGlyph} from './BrandGlyph';
 import {useAuth} from './AuthProvider';
 
 const languageLabels:Record<Language,string>={en:'EN',ru:'RU',kk:'ҚАЗ'};
+const supportedLanguages:Language[]=['en','ru','kk'];
 
 export function AppShell({children}:{children:ReactNode}){
   const pathname=useRouterState({select:state=>state.location.pathname});
-  const{workspace,switchAgency,switchClient,signOut,configured}=useAuth();
+  const{workspace,switchAgency,switchClient,signOut,configured,refresh}=useAuth();
   const{language,setLanguage,t}=useI18n();
   const user=workspace?.currentUser;
   const agency=workspace?.activeAgency;
@@ -19,6 +21,13 @@ export function AppShell({children}:{children:ReactNode}){
   const initials=(user?.name||'IM').split(' ').map(part=>part[0]).join('').slice(0,2).toUpperCase();
   const roleKey=String(agency?.role||'demo').toLowerCase();
   const role=t(`roles.${roleKey}`);
+  const activeModule=useMemo(()=>moduleDomains.flatMap(domain=>domain.modules).find(module=>{const href=getModuleHref(module,activeClientId);return pathname===href||(!isImplementedModule(module.id)&&pathname===`/platform/module/${module.id}`)})??null,[pathname,activeClientId]);
+
+  useEffect(()=>{const next=workspace?.preferences.language;if(next&&supportedLanguages.includes(next as Language)&&next!==language)setLanguage(next as Language)},[workspace?.preferences.language,language,setLanguage]);
+  useEffect(()=>{const preference=workspace?.preferences.theme??'system';const media=window.matchMedia('(prefers-color-scheme: dark)');const apply=()=>{const resolved=preference==='system'?(media.matches?'dark':'light'):preference;document.documentElement.dataset.theme=resolved;document.documentElement.style.colorScheme=resolved};apply();if(preference!=='system')return;media.addEventListener('change',apply);return()=>media.removeEventListener('change',apply)},[workspace?.preferences.theme]);
+  useEffect(()=>{if(!agency||!activeModule)return;void recordWorkspaceRecentItem({agencyId:agency.id,clientId:workspace?.activeClientId??null,itemType:'module',itemId:activeModule.id,title:activeModule.name,route:pathname}).catch(()=>undefined)},[agency?.id,workspace?.activeClientId,activeModule?.id,pathname]);
+
+  async function changeLanguage(next:Language){setLanguage(next);try{await updateWorkspacePreferences({language:next});await refresh()}catch{}}
 
   return <div className="app-shell" style={{'--brand-color':agency?.branding.primaryColor||'#2962ff'} as React.CSSProperties}>
     <aside className="sidebar">
@@ -47,7 +56,7 @@ export function AppShell({children}:{children:ReactNode}){
       <header className="topbar">
         <div className="workspace-heading"><span className="crumb"><i/>{agency?.name||t('common.workspace')}</span><h1>{t('common.marketingPlatform')}</h1></div>
         <div className="top-actions">
-          <label className="language-select" title={t('language.select')}><span>LANG</span><select aria-label={t('language.select')} value={language} onChange={event=>setLanguage(event.target.value as Language)}>{(Object.keys(languageLabels) as Language[]).map(code=><option key={code} value={code}>{languageLabels[code]}</option>)}</select></label>
+          <label className="language-select" title={t('language.select')}><span>LANG</span><select aria-label={t('language.select')} value={language} onChange={event=>void changeLanguage(event.target.value as Language)}>{(Object.keys(languageLabels) as Language[]).map(code=><option key={code} value={code}>{languageLabels[code]}</option>)}</select></label>
           <button className="signal-action">✦ AgencyAI</button>
           <button className="quiet-action">{t('common.inbox')}</button>
           <button className="primary">+ {t('common.addClient')}</button>
