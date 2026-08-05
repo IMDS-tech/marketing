@@ -24,7 +24,7 @@ export interface AdvertisingWorkspaceParams{
 
 const base=(import.meta.env.VITE_REPORT_API_URL||'http://127.0.0.1:4200').replace(/\/$/,'');
 async function accessToken(){const{data,error}=await getSupabaseBrowserClient().auth.getSession();if(error)throw error;const token=data.session?.access_token;if(!token)throw new Error('AUTH_REQUIRED');return token}
-async function request<T>(path:string,params:Record<string,string|number|undefined>){
+async function request<T>(path:string,params:AdvertisingWorkspaceParams){
   const url=new URL(`${base}${path}`);for(const[key,value]of Object.entries(params))if(value!==undefined&&value!=='')url.searchParams.set(key,String(value));
   const response=await fetch(url,{headers:{authorization:`Bearer ${await accessToken()}`,accept:'application/json'}});
   if(!response.ok){let message=`HTTP_${response.status}`;try{const body=await response.json() as {message?:string|object;error?:{message?:string}};message=typeof body.message==='string'?body.message:body.error?.message||message}catch{}throw new Error(message)}
