@@ -1,0 +1,50 @@
+.connector-card{
+  background:var(--connector-surface)!important;
+  border-color:var(--connector-border)!important;
+  color:var(--connector-foreground)!important;
+}
+
+.connector-card::after{
+  display:none!important;
+}
+
+.connector-card:hover{
+  border-color:var(--connector-foreground)!important;
+}
+
+.connector-brand-mark{
+  background:var(--connector-logo-surface)!important;
+  color:var(--connector-logo-foreground)!important;
+  border-color:var(--connector-foreground)!important;
+}
+
+.connector-card p,
+.connector-state{
+  color:var(--connector-foreground)!important;
+  opacity:.82;
+}
+
+.connector-state.connected{
+  color:var(--connector-foreground)!important;
+  opacity:1;
+}
+
+.connector-button{
+  background:var(--connector-button-background)!important;
+  border-color:var(--connector-button-background)!important;
+  color:var(--connector-button-foreground)!important;
+  box-shadow:none!important;
+}
+
+.connector-button[disabled]{
+  background:var(--connector-button-background)!important;
+  border-color:var(--connector-button-background)!important;
+  color:var(--connector-button-foreground)!important;
+  opacity:.45;
+}
+
+.connector-card .connector-badge{
+  background:var(--connector-button-background)!important;
+  color:var(--connector-button-foreground)!important;
+  opacity:.92;
+}
