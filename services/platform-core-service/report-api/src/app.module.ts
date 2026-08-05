@@ -1,0 +1,52 @@
+import {BadRequestException,Body,Controller,Get,Headers,Module,Param,Patch,Post,Query} from '@nestjs/common';
+import {z} from 'zod';
+import {Db} from './db.js';
+import {AccessService,verifyUserJwt} from './security.js';
+import {ReportBuilderController} from './report-builder.controller.js';
+
+const status=z.enum(['draft','scheduled','sent','failed','archived']);
+const createReportSchema=z.object({agencyId:z.string().uuid(),clientId:z.string().uuid().nullable().optional(),folderId:z.string().uuid().nullable().optional(),name:z.string().trim().min(1).max(160),description:z.string().max(2000).default(''),status:status.default('draft'),schedule:z.record(z.string(),z.unknown()).default({}),recipients:z.array(z.unknown()).default([]),nextRunAt:z.string().datetime().nullable().optional()});
+const updateReportSchema=createReportSchema.omit({agencyId:true}).partial().extend({agencyId:z.string().uuid()});
+const createFolderSchema=z.object({agencyId:z.string().uuid(),name:z.string().trim().min(1).max(80),color:z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#64748B')});
+
+type ReportRow={id:string;agency_id:string;client_id:string|null;folder_id:string|null;name:string;description:string;status:string;schedule:Record<string,unknown>;recipients:unknown[];last_generated_at:string|null;next_run_at:string|null;created_at:string;updated_at:string;client_name:string|null;folder_name:string|null};
+type FolderRow={id:string;agency_id:string;name:string;color:string;sort_order:number;created_at:string;updated_at:string};
+const mapReport=(row:ReportRow)=>({id:row.id,agencyId:row.agency_id,clientId:row.client_id,folderId:row.folder_id,name:row.name,description:row.description,status:row.status,schedule:row.schedule,recipients:row.recipients,lastGeneratedAt:row.last_generated_at,nextRunAt:row.next_run_at,createdAt:row.created_at,updatedAt:row.updated_at,clientName:row.client_name,folderName:row.folder_name});
+const mapFolder=(row:FolderRow)=>({id:row.id,agencyId:row.agency_id,name:row.name,color:row.color,sortOrder:row.sort_order,createdAt:row.created_at,updatedAt:row.updated_at});
+const parse=<T>(schema:z.ZodType<T>,value:unknown):T=>{const result=schema.safeParse(value);if(!result.success)throw new BadRequestException(result.error.flatten());return result.data};
+
+@Controller('health')
+class HealthController{@Get()health(){return{ok:true,service:'report-api'}}}
+
+@Controller('v1/report-folders')
+class FolderController{
+  constructor(private readonly db:Db,private readonly access:AccessService){}
+  @Get()
+  async list(@Headers('authorization')auth:string,@Query('agencyId')agencyId:string){const user=await verifyUserJwt(auth);parse(z.string().uuid(),agencyId);await this.access.requirePermission(user.userId,agencyId,'reports.read');const result=await this.db.query<FolderRow>(`select id,agency_id,name,color,sort_order,created_at,updated_at from public.report_folders where agency_id=$1 order by sort_order,name`,[agencyId]);return{items:result.rows.map(mapFolder)}}
+  @Post()
+  async create(@Headers('authorization')auth:string,@Body()body:unknown){const user=await verifyUserJwt(auth);const input=parse(createFolderSchema,body);await this.access.requirePermission(user.userId,input.agencyId,'reports.manage');const result=await this.db.query<FolderRow>(`insert into public.report_folders(agency_id,name,color,created_by) values($1,$2,$3,$4) returning id,agency_id,name,color,sort_order,created_at,updated_at`,[input.agencyId,input.name,input.color,user.userId]);return mapFolder(result.rows[0])}
+}
+
+@Controller('v1/reports')
+class ReportController{
+  constructor(private readonly db:Db,private readonly access:AccessService){}
+  @Get()
+  async list(@Headers('authorization')auth:string,@Query('agencyId')agencyId:string,@Query('clientId')clientId?:string,@Query('status')reportStatus?:string,@Query('folderId')folderId?:string,@Query('search')search?:string){
+    const user=await verifyUserJwt(auth);parse(z.string().uuid(),agencyId);await this.access.requirePermission(user.userId,agencyId,'reports.read');
+    const values:unknown[]=[agencyId,user.userId];const filters=[`r.agency_id=$1`,`(r.client_id is null or exists(select 1 from public.clients ac left join public.client_users cu on cu.client_id=ac.id and cu.user_id=$2 where ac.id=r.client_id and (exists(select 1 from public.agency_memberships am where am.agency_id=ac.agency_id and am.user_id=$2 and am.status='active') or cu.user_id is not null)))`];
+    if(clientId){values.push(parse(z.string().uuid(),clientId));filters.push(`r.client_id=$${values.length}`)}
+    if(reportStatus){values.push(parse(status,reportStatus));filters.push(`r.status=$${values.length}`)}
+    if(folderId){values.push(parse(z.string().uuid(),folderId));filters.push(`r.folder_id=$${values.length}`)}
+    if(search?.trim()){values.push(`%${search.trim()}%`);filters.push(`(r.name ilike $${values.length} or r.description ilike $${values.length})`)}
+    const result=await this.db.query<ReportRow>(`select r.id,r.agency_id,r.client_id,r.folder_id,r.name,r.description,r.status,r.schedule,r.recipients,r.last_generated_at,r.next_run_at,r.created_at,r.updated_at,c.company client_name,f.name folder_name from public.reports r left join public.clients c on c.id=r.client_id left join public.report_folders f on f.id=r.folder_id where ${filters.join(' and ')} order by r.updated_at desc limit 250`,values);return{items:result.rows.map(mapReport)};
+  }
+  @Post()
+  async create(@Headers('authorization')auth:string,@Body()body:unknown){const user=await verifyUserJwt(auth);const input=parse(createReportSchema,body);await this.access.requirePermission(user.userId,input.agencyId,'reports.manage');const result=await this.db.query<ReportRow>(`insert into public.reports(agency_id,client_id,folder_id,name,description,status,schedule,recipients,next_run_at,created_by,updated_by) select $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10 where ($2::uuid is null or exists(select 1 from public.clients where id=$2 and agency_id=$1)) and ($3::uuid is null or exists(select 1 from public.report_folders where id=$3 and agency_id=$1)) returning id,agency_id,client_id,folder_id,name,description,status,schedule,recipients,last_generated_at,next_run_at,created_at,updated_at,null::text client_name,null::text folder_name`,[input.agencyId,input.clientId??null,input.folderId??null,input.name,input.description,input.status,input.schedule,input.recipients,input.nextRunAt??null,user.userId]);if(!result.rows[0])throw new BadRequestException('CLIENT_OR_FOLDER_INVALID');return mapReport(result.rows[0])}
+  @Patch(':id')
+  async update(@Headers('authorization')auth:string,@Param('id')id:string,@Body()body:unknown){const user=await verifyUserJwt(auth);parse(z.string().uuid(),id);const input=parse(updateReportSchema,body);await this.access.requirePermission(user.userId,input.agencyId,'reports.manage');const current=await this.db.query<ReportRow>(`select r.id,r.agency_id,r.client_id,r.folder_id,r.name,r.description,r.status,r.schedule,r.recipients,r.last_generated_at,r.next_run_at,r.created_at,r.updated_at,null::text client_name,null::text folder_name from public.reports r where r.id=$1 and r.agency_id=$2`,[id,input.agencyId]);if(!current.rows[0])throw new BadRequestException('REPORT_NOT_FOUND');const old=current.rows[0];const result=await this.db.query<ReportRow>(`update public.reports set client_id=$3,folder_id=$4,name=$5,description=$6,status=$7,schedule=$8,recipients=$9,next_run_at=$10,updated_by=$11 where id=$1 and agency_id=$2 returning id,agency_id,client_id,folder_id,name,description,status,schedule,recipients,last_generated_at,next_run_at,created_at,updated_at,null::text client_name,null::text folder_name`,[id,input.agencyId,input.clientId===undefined?old.client_id:input.clientId,input.folderId===undefined?old.folder_id:input.folderId,input.name??old.name,input.description??old.description,input.status??old.status,input.schedule??old.schedule,input.recipients??old.recipients,input.nextRunAt===undefined?old.next_run_at:input.nextRunAt,user.userId]);return mapReport(result.rows[0])}
+  @Post(':id/archive')
+  async archive(@Headers('authorization')auth:string,@Param('id')id:string,@Body()body:unknown){const user=await verifyUserJwt(auth);parse(z.string().uuid(),id);const {agencyId}=parse(z.object({agencyId:z.string().uuid()}),body);await this.access.requirePermission(user.userId,agencyId,'reports.manage');const result=await this.db.query<ReportRow>(`update public.reports set status='archived',updated_by=$3 where id=$1 and agency_id=$2 returning id,agency_id,client_id,folder_id,name,description,status,schedule,recipients,last_generated_at,next_run_at,created_at,updated_at,null::text client_name,null::text folder_name`,[id,agencyId,user.userId]);if(!result.rows[0])throw new BadRequestException('REPORT_NOT_FOUND');return mapReport(result.rows[0])}
+}
+
+@Module({controllers:[HealthController,FolderController,ReportController,ReportBuilderController],providers:[Db,AccessService]})
+export class AppModule{}

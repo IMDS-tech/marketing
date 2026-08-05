@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{readFile}from'node:fs/promises';
+const app=await readFile(new URL('../src/app.module.ts',import.meta.url),'utf8');const service=await readFile(new URL('../src/indexer.service.ts',import.meta.url),'utf8');
+test('search indexer exposes tenant search and internal incremental indexing',()=>{for(const token of ["@Controller('v1/search')","@Controller('internal/v1/search-index')","@Post('rebuild')","verifyInternal"])assert.ok(app.includes(token),token)});
+test('indexer covers all declared entity indexes and safe job lifecycle',()=>{for(const token of ["entityType:'client'","entityType:'dashboard'","entityType:'report'","entityType:'campaign'","entityType:'file'","for update skip locked","state='succeeded'","search_vector @@ websearch_to_tsquery"])assert.ok(service.includes(token),token)});
