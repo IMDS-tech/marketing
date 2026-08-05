@@ -52,37 +52,37 @@ grant select, insert, update, delete on public.report_pages, public.report_block
 
 drop policy if exists report_pages_select on public.report_pages;
 create policy report_pages_select on public.report_pages for select to authenticated
-using (exists(select 1 from public.reports r where r.id=report_id and r.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.read') and (r.client_id is null or private.can_access_client(r.client_id))));
+using (exists(select 1 from public.reports r where r.id=public.report_pages.report_id and r.agency_id=public.report_pages.agency_id and private.has_agency_permission(r.agency_id,'reports.read') and (r.client_id is null or private.can_access_client(r.client_id))));
 
 drop policy if exists report_pages_insert on public.report_pages;
 create policy report_pages_insert on public.report_pages for insert to authenticated
-with check (exists(select 1 from public.reports r where r.id=report_id and r.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.manage') and (r.client_id is null or private.can_access_client(r.client_id))));
+with check (exists(select 1 from public.reports r where r.id=public.report_pages.report_id and r.agency_id=public.report_pages.agency_id and private.has_agency_permission(r.agency_id,'reports.manage') and (r.client_id is null or private.can_access_client(r.client_id))));
 
 drop policy if exists report_pages_update on public.report_pages;
 create policy report_pages_update on public.report_pages for update to authenticated
-using (exists(select 1 from public.reports r where r.id=report_id and r.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.manage')))
-with check (exists(select 1 from public.reports r where r.id=report_id and r.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.manage') and (r.client_id is null or private.can_access_client(r.client_id))));
+using (exists(select 1 from public.reports r where r.id=public.report_pages.report_id and r.agency_id=public.report_pages.agency_id and private.has_agency_permission(r.agency_id,'reports.manage')))
+with check (exists(select 1 from public.reports r where r.id=public.report_pages.report_id and r.agency_id=public.report_pages.agency_id and private.has_agency_permission(r.agency_id,'reports.manage') and (r.client_id is null or private.can_access_client(r.client_id))));
 
 drop policy if exists report_pages_delete on public.report_pages;
 create policy report_pages_delete on public.report_pages for delete to authenticated
-using (exists(select 1 from public.reports r where r.id=report_id and r.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.manage')));
+using (exists(select 1 from public.reports r where r.id=public.report_pages.report_id and r.agency_id=public.report_pages.agency_id and private.has_agency_permission(r.agency_id,'reports.manage')));
 
 drop policy if exists report_blocks_select on public.report_blocks;
 create policy report_blocks_select on public.report_blocks for select to authenticated
-using (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=page_id and p.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.read') and (r.client_id is null or private.can_access_client(r.client_id))));
+using (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=public.report_blocks.page_id and p.agency_id=public.report_blocks.agency_id and private.has_agency_permission(r.agency_id,'reports.read') and (r.client_id is null or private.can_access_client(r.client_id))));
 
 drop policy if exists report_blocks_insert on public.report_blocks;
 create policy report_blocks_insert on public.report_blocks for insert to authenticated
-with check (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=page_id and p.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.manage') and (r.client_id is null or private.can_access_client(r.client_id))));
+with check (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=public.report_blocks.page_id and p.agency_id=public.report_blocks.agency_id and private.has_agency_permission(r.agency_id,'reports.manage') and (r.client_id is null or private.can_access_client(r.client_id))));
 
 drop policy if exists report_blocks_update on public.report_blocks;
 create policy report_blocks_update on public.report_blocks for update to authenticated
-using (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=page_id and p.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.manage')))
-with check (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=page_id and p.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.manage') and (r.client_id is null or private.can_access_client(r.client_id))));
+using (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=public.report_blocks.page_id and p.agency_id=public.report_blocks.agency_id and private.has_agency_permission(r.agency_id,'reports.manage')))
+with check (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=public.report_blocks.page_id and p.agency_id=public.report_blocks.agency_id and private.has_agency_permission(r.agency_id,'reports.manage') and (r.client_id is null or private.can_access_client(r.client_id))));
 
 drop policy if exists report_blocks_delete on public.report_blocks;
 create policy report_blocks_delete on public.report_blocks for delete to authenticated
-using (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=page_id and p.agency_id=agency_id and private.has_agency_permission(r.agency_id,'reports.manage')));
+using (exists(select 1 from public.report_pages p join public.reports r on r.id=p.report_id where p.id=public.report_blocks.page_id and p.agency_id=public.report_blocks.agency_id and private.has_agency_permission(r.agency_id,'reports.manage')));
 
 drop trigger if exists report_pages_touch on public.report_pages;
 create trigger report_pages_touch before update on public.report_pages for each row execute function private.platform_core_touch_updated_at();

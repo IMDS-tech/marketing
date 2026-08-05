@@ -1,0 +1,12 @@
+.git
+.github
+.local
+.env
+.env.*
+node_modules
+**/node_modules
+**/dist
+coverage
+supabase/.temp
+supabase/.branches
+*.log

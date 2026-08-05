@@ -2,9 +2,10 @@ begin;
 create schema if not exists private;
 revoke all on schema private from public,anon,authenticated;
 
-drop function if exists public.is_agency_member(uuid);
-drop function if exists public.is_agency_admin(uuid);
-drop function if exists public.can_access_client(uuid);
+-- The Phase 1 tenancy migration already created public helper functions used by
+-- RLS policies. Do not drop them here: PostgreSQL correctly rejects dropping a
+-- function with policy dependencies. The private helpers below replace their
+-- implementation boundary, and the policies are then recreated to reference it.
 
 create or replace function private.is_agency_member(target_agency_id uuid)
 returns boolean language sql stable security definer set search_path=''

@@ -1,0 +1,119 @@
+name: Platform bootstrap CI
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'scripts/**'
+      - 'docs/openapi/**'
+      - '**/Dockerfile'
+      - 'docker-compose.dev.yml'
+      - '.dockerignore'
+      - '.env.example'
+      - 'package.json'
+      - '.github/workflows/platform-bootstrap-ci.yml'
+  push:
+    branches: [main, 'agent/**', 'release/**']
+    paths:
+      - 'supabase/**'
+      - 'scripts/**'
+      - 'docs/openapi/**'
+      - '**/Dockerfile'
+      - 'docker-compose.dev.yml'
+      - '.dockerignore'
+      - '.env.example'
+      - 'package.json'
+      - '.github/workflows/platform-bootstrap-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-bootstrap-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Runtime contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check scripts/bootstrap-local.mjs
+      - run: node --check scripts/dev-all.mjs
+      - run: node --check scripts/healthcheck-all.mjs
+      - run: node --check scripts/e2e-smoke.mjs
+      - run: node scripts/validate-port-matrix.mjs
+      - run: node scripts/validate-openapi.mjs
+      - name: Prepare non-secret compose env files
+        run: |
+          cp services/platform-core-service/.env.example services/platform-core-service/.env
+          cp services/clients-api/.env.example services/clients-api/.env
+          cp services/integration-service/.env.example services/integration-service/.env
+          cp services/report-api/.env.example services/report-api/.env
+          cp services/notification-worker/.env.example services/notification-worker/.env
+          cp services/ai-service/.env.example services/ai-service/.env
+          cp services/search-indexer/.env.example services/search-indexer/.env
+          cp services/sync-worker/.env.example services/sync-worker/.env
+      - name: Validate compose topology
+        env:
+          VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+        run: docker compose -f docker-compose.dev.yml config --quiet
+
+  database:
+    name: Clean Supabase reset and RLS tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Start local Supabase
+        run: pnpm dlx supabase@2.109.1 start
+      - name: Reapply every migration
+        run: pnpm dlx supabase@2.109.1 db reset --local
+      - name: Run pgTAP security contracts
+        run: pnpm dlx supabase@2.109.1 test db
+      - name: Print migration state
+        run: pnpm dlx supabase@2.109.1 migration list --local
+      - name: Stop local Supabase
+        if: always()
+        run: pnpm dlx supabase@2.109.1 stop --no-backup
+
+  containers:
+    name: Container build (${{ matrix.component }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {component: platform-core, dockerfile: services/platform-core-service/Dockerfile}
+          - {component: clients-api, dockerfile: services/clients-api/Dockerfile}
+          - {component: integration-service, dockerfile: services/integration-service/Dockerfile}
+          - {component: report-api, dockerfile: services/report-api/Dockerfile}
+          - {component: ai-service, dockerfile: services/ai-service/Dockerfile}
+          - {component: search-indexer, dockerfile: services/search-indexer/Dockerfile}
+          - {component: notification-worker, dockerfile: services/notification-worker/Dockerfile}
+          - {component: sync-worker, dockerfile: services/sync-worker/Dockerfile}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: false
+          tags: imds/${{ matrix.component }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}

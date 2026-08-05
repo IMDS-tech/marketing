@@ -1,0 +1,16 @@
+import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+const root=resolve(import.meta.dirname,'..');
+const parseEnv=text=>Object.fromEntries(text.split(/\r?\n/).map(x=>x.trim()).filter(x=>x&&!x.startsWith('#')&&x.includes('=')).map(line=>{const i=line.indexOf('=');return[line.slice(0,i),line.slice(i+1)]}));
+const env={...parseEnv(readFileSync(resolve(root,'.env'),'utf8')),...process.env};
+const bootstrap=JSON.parse(readFileSync(resolve(root,'.local/bootstrap.json'),'utf8'));
+const auth=await fetch(`${env.VITE_SUPABASE_URL}/auth/v1/token?grant_type=password`,{method:'POST',headers:{apikey:env.VITE_SUPABASE_PUBLISHABLE_KEY,'content-type':'application/json'},body:JSON.stringify({email:bootstrap.email,password:bootstrap.password||env.IMDS_LOCAL_ADMIN_PASSWORD})});
+if(!auth.ok)throw new Error(`Login smoke failed: ${auth.status} ${await auth.text()}`);
+const session=await auth.json();
+const workspace=await fetch(`${env.VITE_PLATFORM_CORE_SERVICE_URL}/v1/platform/workspace?agencyId=${bootstrap.agencyId}`,{headers:{authorization:`Bearer ${session.access_token}`}});
+if(!workspace.ok)throw new Error(`Workspace smoke failed: ${workspace.status} ${await workspace.text()}`);
+const body=await workspace.json();
+if(body.agency?.id!==bootstrap.agencyId)throw new Error('Workspace returned the wrong agency.');
+if(!Array.isArray(body.clients)||!body.clients.some(client=>client.id===bootstrap.clientId))throw new Error('Workspace did not return the bootstrapped client.');
+await import('./healthcheck-all.mjs');
+console.log('Authentication, tenant workspace and service health smoke passed.');

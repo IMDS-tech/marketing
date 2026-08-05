@@ -1,19 +1,31 @@
 {
   "name": "@imds/marketing",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "packageManager": "pnpm@10.14.0",
   "engines": { "node": ">=22" },
-  "workspaces": ["apps/*","packages/*","services/*"],
+  "workspaces": ["apps/*", "packages/*", "services/*"],
   "scripts": {
-    "postinstall": "cd apps/marketing-web && bun run build",
     "build": "pnpm -r --if-present build",
-    "dev": "pnpm --filter @imds/marketing-web dev",
-    "deploy": "pnpm build && wrangler deploy",
     "check": "pnpm -r check",
     "test": "pnpm -r test",
-    "supabase:start": "supabase start",
-    "supabase:reset": "supabase db reset"
+    "validate": "pnpm check && pnpm test && pnpm build && pnpm validate:ports && pnpm validate:openapi",
+    "dev": "pnpm --filter @imds/marketing-web dev",
+    "dev:all": "node scripts/dev-all.mjs",
+    "bootstrap:local": "node scripts/bootstrap-local.mjs",
+    "healthcheck:all": "node scripts/healthcheck-all.mjs",
+    "test:e2e": "node scripts/e2e-smoke.mjs",
+    "test:rls": "pnpm dlx supabase@2.109.1 test db",
+    "validate:ports": "node scripts/validate-port-matrix.mjs",
+    "validate:openapi": "node scripts/validate-openapi.mjs",
+    "supabase:start": "pnpm dlx supabase@2.109.1 start",
+    "supabase:stop": "pnpm dlx supabase@2.109.1 stop",
+    "supabase:reset": "pnpm dlx supabase@2.109.1 db reset --local",
+    "supabase:status": "pnpm dlx supabase@2.109.1 status",
+    "supabase:test": "pnpm dlx supabase@2.109.1 test db",
+    "deploy": "pnpm build && wrangler deploy"
   },
-  "devDependencies": {"wrangler": "4.118.0"}
+  "devDependencies": {
+    "wrangler": "4.118.0"
+  }
 }
