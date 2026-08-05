@@ -27,8 +27,8 @@ const progress:Record<string,ModuleProgressRecord>={
   authentication:{status:'in_progress'},
   workspace:{status:'in_progress'},
   'multi-tenancy':{
-    status:'in_progress',
-    note:'Tenant isolation is implemented; final typecheck, production build, CI and merge are still pending.',
+    status:'complete',
+    note:'Tenant-scoped RLS, API, jobs, OAuth references and private storage are deployed; isolation tests, typecheck, tests and production build passed.',
   },
   permissions:{status:'in_progress'},
   audit:{status:'in_progress'},
