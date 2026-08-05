@@ -14,6 +14,7 @@ import {LoginPage} from './pages/LoginPage';
 import {ModuleCatalogPage} from './pages/ModuleCatalogPage';
 import {ModulePlaceholderPage} from './pages/ModulePlaceholderPage';
 import {NotFoundPage} from './pages/NotFoundPage';
+import {BackendServicesPage} from './pages/backend/BackendServicesPage';
 import {MetaAdsCampaignsPage,TikTokAdsCampaignsPage} from './pages/integrations/PaidAdsCampaignsPage';
 import {AgencyConnectionsPage,ClientDataSourcesPage,ConnectionManagerPage,IntegrationSchemaPage,SyncHealthPage} from './pages/integrations/IntegrationsWorkspacePage';
 import {AuthenticationPage} from './pages/platform/AuthenticationPage';
@@ -51,11 +52,12 @@ const authenticationRoute=createRoute({getParentRoute:()=>rootRoute,path:'/platf
 const workspaceRoute=createRoute({getParentRoute:()=>rootRoute,path:'/platform/workspace',component:WorkspacePage});
 const modulesRoute=createRoute({getParentRoute:()=>rootRoute,path:'/platform/modules',component:ModuleCatalogPage});
 const moduleRoute=createRoute({getParentRoute:()=>rootRoute,path:'/platform/module/$moduleId',component:ModulePlaceholderPage});
+const backendServiceRoute=createRoute({getParentRoute:()=>rootRoute,path:'/backend/$serviceId',component:BackendServicesPage});
 const dashboardRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/dashboards',component:DashboardWorkspacePage});
 const metaCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/meta-ads/campaigns',component:MetaAdsCampaignsPage});
 const tiktokCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/tiktok-ads/campaigns',component:TikTokAdsCampaignsPage});
 const forbiddenRoute=createRoute({getParentRoute:()=>rootRoute,path:'/403',component:ForbiddenPage});
-const router=createRouter({routeTree:rootRoute.addChildren([clientsRoute,clientCreateRoute,clientGroupsRoute,clientProfileRoute,clientUsersRoute,clientSettingsRoute,reportsRoute,reportBuilderRoute,rollupsRoute,kpisRoute,dataRoute,connectionManagerRoute,agencyConnectionsRoute,integrationSchemaRoute,syncHealthRoute,clientDataSourcesRoute,templatesRoute,exportsRoute,authenticationRoute,workspaceRoute,modulesRoute,moduleRoute,dashboardRoute,metaCampaignsRoute,tiktokCampaignsRoute,forbiddenRoute])});
+const router=createRouter({routeTree:rootRoute.addChildren([clientsRoute,clientCreateRoute,clientGroupsRoute,clientProfileRoute,clientUsersRoute,clientSettingsRoute,reportsRoute,reportBuilderRoute,rollupsRoute,kpisRoute,dataRoute,connectionManagerRoute,agencyConnectionsRoute,integrationSchemaRoute,syncHealthRoute,clientDataSourcesRoute,templatesRoute,exportsRoute,authenticationRoute,workspaceRoute,modulesRoute,moduleRoute,backendServiceRoute,dashboardRoute,metaCampaignsRoute,tiktokCampaignsRoute,forbiddenRoute])});
 declare module '@tanstack/react-router'{interface Register{router:typeof router}}
 const queryClient=new QueryClient({defaultOptions:{queries:{staleTime:30000,retry:1}}});
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><I18nProvider><QueryClientProvider client={queryClient}><AuthProvider><RouterProvider router={router}/></AuthProvider></QueryClientProvider></I18nProvider></React.StrictMode>);
