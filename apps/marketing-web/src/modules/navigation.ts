@@ -1,5 +1,6 @@
 import {moduleDomains} from './catalog';
-import type {ModuleDefinition} from './types';
+import {getModuleDeliveryStatus} from './progress';
+import type {ModuleDefinition,ModuleDomain} from './types';
 
 const implementedRoutes:Record<string,(clientId:string)=>string>={
   authentication:()=>'/platform/authentication',
@@ -8,7 +9,7 @@ const implementedRoutes:Record<string,(clientId:string)=>string>={
   'users-teams':()=>'/settings/users',
   billing:()=>'/settings/billing',
   'agency-onboarding':()=>'/onboarding',
-  'client-directory':()=> '/',
+  'client-directory':()=>'/clients',
   'client-creation':()=>'/clients/new',
   'client-profile':clientId=>`/client/${clientId}/profile`,
   'client-users':clientId=>`/client/${clientId}/users`,
@@ -20,13 +21,10 @@ const implementedRoutes:Record<string,(clientId:string)=>string>={
   'data-source-management':clientId=>`/client/${clientId}/data`,
   'integration-schema':()=>'/data/schema',
   'sync-health':()=>'/data/sync-health',
-  'dashboard-directory':clientId=>`/client/${clientId}/dashboards`,
   campaigns:clientId=>`/client/${clientId}/ads/campaigns`,
   'funnel-analytics':clientId=>`/client/${clientId}/ads/funnel`,
   'report-directory':()=>'/reports',
-  'rollup-dashboards':()=>'/rollups',
-  'kpi-management':()=>'/kpis',
-  'export-center':()=>'/exports',
+  'report-builder':clientId=>`/client/${clientId}/reports/new`,
   'platform-core-service':()=>'/backend/platform-core-service',
   'integration-service':()=>'/backend/integration-service',
   'report-api':()=>'/backend/report-api',
@@ -35,6 +33,40 @@ const implementedRoutes:Record<string,(clientId:string)=>string>={
   'search-indexer':()=>'/backend/search-indexer',
 };
 
-export function getModuleHref(module:ModuleDefinition,clientId:string){return implementedRoutes[module.id]?.(clientId)??`/platform/module/${module.id}`}
-export function getModuleById(moduleId:string|undefined){if(!moduleId)return undefined;for(const domain of moduleDomains){const module=domain.modules.find(item=>item.id===moduleId);if(module)return{domain,module}}return undefined}
-export function isImplementedModule(moduleId:string){return moduleId in implementedRoutes}
+const clientScopedModules=new Set([
+  'client-profile','client-users','client-settings','data-source-management',
+  'campaigns','funnel-analytics','report-builder',
+]);
+
+export interface UserNavigationModule{module:ModuleDefinition;href:string}
+export interface UserNavigationDomain extends Omit<ModuleDomain,'modules'>{modules:UserNavigationModule[]}
+
+export function getImplementedModuleHref(module:ModuleDefinition,clientId?:string|null):string|null{
+  const route=implementedRoutes[module.id];
+  if(!route)return null;
+  if(clientScopedModules.has(module.id)&&!clientId)return null;
+  return route(clientId??'');
+}
+
+export function getModuleHref(module:ModuleDefinition,clientId?:string|null):string{
+  return getImplementedModuleHref(module,clientId)??'/platform/modules';
+}
+
+export function isImplementedModule(moduleId:string){return Boolean(implementedRoutes[moduleId])}
+
+export function isUserNavigationModule(module:ModuleDefinition,clientId?:string|null){
+  if(module.surface==='backend'||module.surface==='superadmin')return false;
+  if(getModuleDeliveryStatus(module.id)!=='complete')return false;
+  return Boolean(getImplementedModuleHref(module,clientId));
+}
+
+export function getUserNavigationDomains(clientId?:string|null):UserNavigationDomain[]{
+  return moduleDomains.map(domain=>({
+    id:domain.id,
+    name:domain.name,
+    description:domain.description,
+    modules:domain.modules
+      .filter(module=>isUserNavigationModule(module,clientId))
+      .map(module=>({module,href:getImplementedModuleHref(module,clientId)!})),
+  })).filter(domain=>domain.modules.length>0);
+}
