@@ -1,4 +1,4 @@
-name: Frontend CI
+name: Frontend and Integration CI
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
     paths:
       - 'apps/marketing-web/**'
       - 'packages/**'
+      - 'services/**'
       - 'package.json'
       - 'pnpm-workspace.yaml'
       - 'tsconfig.base.json'
@@ -27,29 +28,19 @@ jobs:
     name: Typecheck, test and build
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 10.14.0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --ignore-scripts
-
       - name: Typecheck workspaces
         run: pnpm check
-
       - name: Run tests
         run: pnpm test
-
-      - name: Build production frontend
+      - name: Build production applications
         run: pnpm build

@@ -15,12 +15,10 @@ import {ModuleCatalogPage} from './pages/ModuleCatalogPage';
 import {ModulePlaceholderPage} from './pages/ModulePlaceholderPage';
 import {NotFoundPage} from './pages/NotFoundPage';
 import {MetaAdsCampaignsPage,TikTokAdsCampaignsPage} from './pages/integrations/PaidAdsCampaignsPage';
+import {AgencyConnectionsPage,ClientDataSourcesPage,ConnectionManagerPage,IntegrationSchemaPage,SyncHealthPage} from './pages/integrations/IntegrationsWorkspacePage';
 import {AuthenticationPage} from './pages/platform/AuthenticationPage';
 import {WorkspacePage} from './pages/platform/WorkspacePage';
-import './styles.css';
-import './module-navigation.css';
-import './auth.css';
-
+import './styles.css';import './module-navigation.css';import './auth.css';
 function Root(){const{configured,loading,session,workspace,error,recoveryMode}=useAuth();const{t}=useI18n();if(loading)return <div className="center-screen">{t('common.loadingWorkspace')}</div>;if(configured&&recoveryMode)return <LoginPage/>;if(configured&&!session)return <LoginPage/>;if(error&&!workspace)return <div className="center-screen error-card">{error}</div>;return <AppShell><Outlet/></AppShell>}
 const rootRoute=createRootRoute({component:Root,notFoundComponent:NotFoundPage});
 const clientsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/',component:ClientsPage});
@@ -28,6 +26,11 @@ const reportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/reports',com
 const rollupsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/rollups',component:()=> <EmptySectionPage titleKey="nav.rollups"/>});
 const kpisRoute=createRoute({getParentRoute:()=>rootRoute,path:'/kpis',component:()=> <EmptySectionPage titleKey="nav.kpis"/>});
 const dataRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data',component:DataSourcesPage});
+const connectionManagerRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data/connections',component:ConnectionManagerPage});
+const agencyConnectionsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data/agency-connections',component:AgencyConnectionsPage});
+const integrationSchemaRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data/schema',component:IntegrationSchemaPage});
+const syncHealthRoute=createRoute({getParentRoute:()=>rootRoute,path:'/data/sync-health',component:SyncHealthPage});
+const clientDataSourcesRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/data',component:ClientDataSourcesPage});
 const templatesRoute=createRoute({getParentRoute:()=>rootRoute,path:'/templates',component:()=> <EmptySectionPage titleKey="nav.templates"/>});
 const exportsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/exports',component:()=> <EmptySectionPage titleKey="nav.exports"/>});
 const authenticationRoute=createRoute({getParentRoute:()=>rootRoute,path:'/platform/authentication',component:AuthenticationPage});
@@ -38,7 +41,7 @@ const dashboardRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$cl
 const metaCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/meta-ads/campaigns',component:MetaAdsCampaignsPage});
 const tiktokCampaignsRoute=createRoute({getParentRoute:()=>rootRoute,path:'/client/$clientId/tiktok-ads/campaigns',component:TikTokAdsCampaignsPage});
 const forbiddenRoute=createRoute({getParentRoute:()=>rootRoute,path:'/403',component:ForbiddenPage});
-const router=createRouter({routeTree:rootRoute.addChildren([clientsRoute,reportsRoute,rollupsRoute,kpisRoute,dataRoute,templatesRoute,exportsRoute,authenticationRoute,workspaceRoute,modulesRoute,moduleRoute,dashboardRoute,metaCampaignsRoute,tiktokCampaignsRoute,forbiddenRoute])});
+const router=createRouter({routeTree:rootRoute.addChildren([clientsRoute,reportsRoute,rollupsRoute,kpisRoute,dataRoute,connectionManagerRoute,agencyConnectionsRoute,integrationSchemaRoute,syncHealthRoute,clientDataSourcesRoute,templatesRoute,exportsRoute,authenticationRoute,workspaceRoute,modulesRoute,moduleRoute,dashboardRoute,metaCampaignsRoute,tiktokCampaignsRoute,forbiddenRoute])});
 declare module '@tanstack/react-router'{interface Register{router:typeof router}}
 const queryClient=new QueryClient({defaultOptions:{queries:{staleTime:30000,retry:1}}});
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><I18nProvider><QueryClientProvider client={queryClient}><AuthProvider><RouterProvider router={router}/></AuthProvider></QueryClientProvider></I18nProvider></React.StrictMode>);
