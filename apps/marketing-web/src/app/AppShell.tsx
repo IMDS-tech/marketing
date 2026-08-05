@@ -8,6 +8,10 @@ import {BrandGlyph} from './BrandGlyph';
 import {useAuth} from './AuthProvider';
 
 const languageLabels:Record<Language,string>={en:'EN',ru:'RU',kk:'ҚАЗ'};
+const hiddenSidebarModuleIds=new Set(['multi-tenancy']);
+const sidebarDomains=moduleDomains
+  .map(domain=>({...domain,modules:domain.modules.filter(module=>!hiddenSidebarModuleIds.has(module.id))}))
+  .filter(domain=>domain.modules.length>0);
 
 export function AppShell({children}:{children:ReactNode}){
   const pathname=useRouterState({select:state=>state.location.pathname});
@@ -32,7 +36,7 @@ export function AppShell({children}:{children:ReactNode}){
         <span><i className="nav-module-state nav-module-state--error"/>Ошибка</span>
       </div>
       <nav className="module-tree">
-        {moduleDomains.map((domain,index)=><details className="module-domain" key={domain.id} open={index<8}>
+        {sidebarDomains.map((domain,index)=><details className="module-domain" key={domain.id} open={index<8}>
           <summary><span>{domain.name}</span><small>{domain.modules.length}</small></summary>
           <div className="module-domain__items">{domain.modules.map(module=>{const href=getModuleHref(module,activeClientId);const active=pathname===href||(!isImplementedModule(module.id)&&pathname===`/platform/module/${module.id}`);const deliveryStatus=getModuleDeliveryStatus(module.id);return <Link key={module.id} to={href as never} className={`nav-link ${active?'is-active':''}`} title={`${module.description} · ${moduleDeliveryLabels[deliveryStatus]}`}><span className="nav-signal"/><span className="nav-link__label">{module.name}</span><i className={`nav-module-state nav-module-state--${deliveryStatus}`} title={moduleDeliveryLabels[deliveryStatus]}/></Link>})}</div>
         </details>)}
