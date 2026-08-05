@@ -1,25 +1,26 @@
 name: Sync worker checks
+
 on:
   pull_request:
-    paths: ['services/sync-worker/**', '.github/workflows/sync-worker.yml']
+    paths: ['services/sync-worker/**', '.github/workflows/sync-worker.yml', 'package.json', 'pnpm-workspace.yaml']
   push:
     branches: [main]
-    paths: ['services/sync-worker/**', '.github/workflows/sync-worker.yml']
+    paths: ['services/sync-worker/**', '.github/workflows/sync-worker.yml', 'package.json', 'pnpm-workspace.yaml']
+
 permissions:
   contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/sync-worker
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: services/sync-worker/package-lock.json
-      - run: npm ci
-      - run: npm run check
-      - run: npm test
+      - run: pnpm install --no-frozen-lockfile --ignore-scripts
+      - run: pnpm --filter @imds/marketing-sync-worker check
+      - run: pnpm --filter @imds/marketing-sync-worker test
