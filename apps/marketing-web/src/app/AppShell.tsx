@@ -32,10 +32,10 @@ export function AppShell({children}:{children:ReactNode}){
       <div className="brand"><BrandGlyph/><div><strong>IMDS</strong><span>Signal Workspace</span></div></div>
       {workspace&&<><select className="tenant-switcher" value={agency?.id||''} onChange={event=>void switchAgency(event.target.value)}>{workspace.agencies.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select><select className="tenant-switcher client-context-switcher" value={workspace.activeClientId??''} onChange={event=>void switchClient(event.target.value||null)}><option value="">Уровень агентства</option>{workspace.clients.map(item=><option key={item.id} value={item.id}>{item.company}</option>)}</select></>}
       <nav className="module-tree" aria-label="Основная навигация">
-        {navigationDomains.map((domain,index)=><details className="module-domain" key={domain.id} open={index<6}>
+        {navigationDomains.map((domain,index)=>{const isCurrent=domain.modules.some(item=>pathname===item.href);return <details className={`module-domain ${isCurrent?'is-current':''}`} key={domain.id} open={index<6||isCurrent}>
           <summary><span>{domain.name}</span><small>{domain.modules.length}</small></summary>
           <div className="module-domain__items">{domain.modules.map(({module,href})=><Link key={module.id} to={href as never} className={`nav-link ${pathname===href?'is-active':''}`} title={module.description}><span className="nav-signal"/><span className="nav-link__label">{module.name}</span></Link>)}</div>
-        </details>)}
+        </details>})}
       </nav>
       <div className="sidebar-bottom">
         <Link to="/platform/workspace" className="architecture-link">Настройки Workspace</Link>
