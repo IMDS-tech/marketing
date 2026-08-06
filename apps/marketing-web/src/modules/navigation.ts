@@ -3,70 +3,12 @@ import {getModuleDeliveryStatus} from './progress';
 import type {ModuleDefinition,ModuleDomain} from './types';
 
 const implementedRoutes:Record<string,(clientId:string)=>string>={
-  authentication:()=>'/platform/authentication',
-  workspace:()=>'/platform/workspace',
-  'agency-profile':()=>'/settings/company',
-  'users-teams':()=>'/settings/users',
-  billing:()=>'/settings/billing',
-  'agency-onboarding':()=>'/onboarding',
-  'client-directory':()=>'/clients',
-  'client-creation':()=>'/clients/new',
-  'client-profile':clientId=>`/client/${clientId}/profile`,
-  'client-users':clientId=>`/client/${clientId}/users`,
-  'client-settings':clientId=>`/client/${clientId}/settings`,
-  'client-groups':()=>'/clients/groups',
-  'integration-catalog':()=>'/data',
-  'connection-manager':()=>'/data/connections',
-  'agency-connections':()=>'/data/agency-connections',
-  'data-source-management':clientId=>`/client/${clientId}/data`,
-  'integration-schema':()=>'/data/schema',
-  'sync-health':()=>'/data/sync-health',
-  campaigns:clientId=>`/client/${clientId}/ads/campaigns`,
-  'funnel-analytics':clientId=>`/client/${clientId}/ads/funnel`,
-  'report-directory':()=>'/reports',
-  'report-builder':clientId=>`/client/${clientId}/reports/new`,
-  'platform-core-service':()=>'/backend/platform-core-service',
-  'integration-service':()=>'/backend/integration-service',
-  'report-api':()=>'/backend/report-api',
-  'notification-worker':()=>'/backend/notification-worker',
-  'ai-service':()=>'/backend/ai-service',
-  'search-indexer':()=>'/backend/search-indexer',
-};
-
-const clientScopedModules=new Set([
-  'client-profile','client-users','client-settings','data-source-management',
-  'campaigns','funnel-analytics','report-builder',
-]);
-
+  authentication:()=>'/platform/authentication',workspace:()=>'/platform/workspace','agency-profile':()=>'/settings/company','users-teams':()=>'/settings/users',billing:()=>'/settings/billing','agency-onboarding':()=>'/onboarding','client-directory':()=>'/clients','client-creation':()=>'/clients/new','client-profile':clientId=>`/client/${clientId}/profile`,'client-users':clientId=>`/client/${clientId}/users`,'client-settings':clientId=>`/client/${clientId}/settings`,'client-groups':()=>'/clients/groups','integration-catalog':()=>'/data','connection-manager':()=>'/data/connections','agency-connections':()=>'/data/agency-connections','data-source-management':clientId=>`/client/${clientId}/data`,'integration-schema':()=>'/data/schema','sync-health':()=>'/data/sync-health',campaigns:clientId=>`/client/${clientId}/ads/campaigns`,'funnel-analytics':clientId=>`/client/${clientId}/ads/funnel`,'dashboard-directory':clientId=>`/client/${clientId}/dashboards`,'dashboard-builder':clientId=>`/client/${clientId}/dashboards`,'widget-builder':clientId=>`/client/${clientId}/dashboards`,'widget-configuration':clientId=>`/client/${clientId}/dashboards`,'dashboard-filters':clientId=>`/client/${clientId}/dashboards`,'report-directory':()=>'/reports','report-builder':clientId=>`/client/${clientId}/reports/new`,'platform-core-service':()=>'/backend/platform-core-service','integration-service':()=>'/backend/integration-service','report-api':()=>'/backend/report-api','notification-worker':()=>'/backend/notification-worker','ai-service':()=>'/backend/ai-service','search-indexer':()=>'/backend/search-indexer'};
+const clientScopedModules=new Set(['client-profile','client-users','client-settings','data-source-management','campaigns','funnel-analytics','dashboard-directory','dashboard-builder','widget-builder','widget-configuration','dashboard-filters','report-builder']);
 export interface UserNavigationModule{module:ModuleDefinition;href:string}
 export interface UserNavigationDomain extends Omit<ModuleDomain,'modules'>{modules:UserNavigationModule[]}
-
-export function getImplementedModuleHref(module:ModuleDefinition,clientId?:string|null):string|null{
-  const route=implementedRoutes[module.id];
-  if(!route)return null;
-  if(clientScopedModules.has(module.id)&&!clientId)return null;
-  return route(clientId??'');
-}
-
-export function getModuleHref(module:ModuleDefinition,clientId?:string|null):string{
-  return getImplementedModuleHref(module,clientId)??'/platform/modules';
-}
-
+export function getImplementedModuleHref(module:ModuleDefinition,clientId?:string|null):string|null{const route=implementedRoutes[module.id];if(!route)return null;if(clientScopedModules.has(module.id)&&!clientId)return null;return route(clientId??'')}
+export function getModuleHref(module:ModuleDefinition,clientId?:string|null):string{return getImplementedModuleHref(module,clientId)??'/platform/modules'}
 export function isImplementedModule(moduleId:string){return Boolean(implementedRoutes[moduleId])}
-
-export function isUserNavigationModule(module:ModuleDefinition,clientId?:string|null){
-  if(module.surface==='backend'||module.surface==='superadmin')return false;
-  if(getModuleDeliveryStatus(module.id)!=='complete')return false;
-  return Boolean(getImplementedModuleHref(module,clientId));
-}
-
-export function getUserNavigationDomains(clientId?:string|null):UserNavigationDomain[]{
-  return moduleDomains.map(domain=>({
-    id:domain.id,
-    name:domain.name,
-    description:domain.description,
-    modules:domain.modules
-      .filter(module=>isUserNavigationModule(module,clientId))
-      .map(module=>({module,href:getImplementedModuleHref(module,clientId)!})),
-  })).filter(domain=>domain.modules.length>0);
-}
+export function isUserNavigationModule(module:ModuleDefinition,clientId?:string|null){if(module.surface==='backend'||module.surface==='superadmin')return false;if(getModuleDeliveryStatus(module.id)!=='complete')return false;return Boolean(getImplementedModuleHref(module,clientId))}
+export function getUserNavigationDomains(clientId?:string|null):UserNavigationDomain[]{return moduleDomains.map(domain=>({id:domain.id,name:domain.name,description:domain.description,modules:domain.modules.filter(module=>isUserNavigationModule(module,clientId)).map(module=>({module,href:getImplementedModuleHref(module,clientId)!}))})).filter(domain=>domain.modules.length>0)}
