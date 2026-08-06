@@ -1,58 +1,8 @@
-export type WidgetType = 'stat' | 'line' | 'bar' | 'pie' | 'table';
-
-export type WidgetFilters = {
-  entityType?: string;
-  search?: string;
-};
-
-export type WidgetSettings = {
-  breakdown?: 'none' | 'integration' | 'entity';
-};
-
-export type DashboardWidget = {
-  id: string;
-  section_id: string;
-  type: WidgetType;
-  metric_key: string | null;
-  integration_slug: string | null;
-  title: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  color: string | null;
-  date_range_json: Record<string, unknown>;
-  filters_json: WidgetFilters;
-  settings_json: WidgetSettings;
-};
-
-export type DashboardModel = {
-  id: string;
-  name: string;
-  client_id: string;
-  sections: Array<{
-    id: string;
-    title: string;
-    widgets: DashboardWidget[];
-  }>;
-};
-
-export type MetricOption = {
-  metric_key: string;
-  label: string;
-  data_type: string;
-  format: string;
-  category: string;
-};
-
-export type IntegrationOption = {
-  slug: string;
-  name: string;
-};
-
-export type WidgetSeriesRow = {
-  metric_date: string;
-  breakdown_key: string;
-  breakdown_label: string;
-  value: number;
-};
+export type DashboardStatus='draft'|'published'|'archived';
+export type WidgetType='stat'|'kpi'|'line'|'area'|'bar'|'stacked_bar'|'pie'|'donut'|'table'|'funnel'|'progress'|'text';
+export type DashboardListItem={id:string;agencyId:string;clientId:string;name:string;description:string;status:DashboardStatus;isDefault:boolean;isSmart:boolean;position:number;sectionCount:number;widgetCount:number;updatedAt:string};
+export type WidgetData={points:Array<{date:string;label:string;value:number}>;current:number;previous:number|null;change:number|null};
+export type DashboardWidget={id:string;type:WidgetType;title:string;metricKey:string|null;dimensionKey:string|null;integrationSlug:string|null;aggregation:'sum'|'avg'|'min'|'max'|'count';breakdown:'none'|'integration'|'entity'|'dimension';comparison:'none'|'previous_period'|'previous_year';dateRange:{mode:'global'|'custom';from?:string;to?:string};filters:{entityType?:string;accountId?:string;campaignId?:string;device?:string;region?:string;custom:Record<string,string|number|boolean>};sortBy:'date'|'label'|'value';sortDir:'asc'|'desc';limit:number;format:{style:'number'|'currency'|'percent';currency:string;decimals:number;compact:boolean};color:string;target:number|null;text:string;x:number;y:number;w:number;h:number};
+export type DashboardSection={id:string;title:string;position:number;settings:Record<string,unknown>;widgets:DashboardWidget[]};
+export type DashboardDocument={agencyId:string;name:string;description:string;status:DashboardStatus;isDefault:boolean;globalFilters:Record<string,unknown>;sections:DashboardSection[]};
+export type DashboardWorkspace={dashboard:DashboardListItem&{globalFilters:Record<string,unknown>};sections:DashboardSection[];data:Record<string,WidgetData>;options:{integrations:Array<{slug:string;name:string}>;metrics:Array<{metric_key:string;label:string;format:string;category:string}>;accounts:Array<{id:string;name:string}>;campaigns:Array<{id:string;name:string}>;devices:string[];regions:string[]};range:{dateFrom:string;dateTo:string}};
