@@ -8,6 +8,7 @@ const main=await readFile(new URL('../src/main.tsx',import.meta.url),'utf8');
 const apiClient=await readFile(new URL('../../../packages/api-client/src/index.ts',import.meta.url),'utf8');
 const clientsApi=await readFile(new URL('../src/clients-api.ts',import.meta.url),'utf8');
 const reportApi=await readFile(new URL('../src/report-api.ts',import.meta.url),'utf8');
+const crossClientPage=await readFile(new URL('../src/pages/cross-client/CrossClientAnalyticsPage.tsx',import.meta.url),'utf8');
 
 const backendModules=['platform-core-service','integration-service','report-api','notification-worker','ai-service','search-indexer'];
 
@@ -20,7 +21,10 @@ test('sidebar contains only completed user-facing modules',()=>{
 });
 
 test('placeholder routes are not mounted',()=>{
-  for(const marker of ['EmptySectionPage','ModulePlaceholderPage',"path:'/rollups'","path:'/kpis'","path:'/templates'","path:'/exports'","path:'/platform/module/$moduleId'"])assert.ok(!main.includes(marker),marker);
+  for(const marker of ['EmptySectionPage','ModulePlaceholderPage',"path:'/kpis'","path:'/templates'","path:'/exports'","path:'/platform/module/$moduleId'"])assert.ok(!main.includes(marker),marker);
+  assert.ok(main.includes("path:'/rollups'"));
+  assert.ok(main.includes('CrossClientAnalyticsPage'));
+  assert.ok(crossClientPage.includes('Client Comparison'));
   assert.ok(main.includes("path:'/platform/modules'"));
   assert.ok(main.includes("path:'/backend/$serviceId'"));
 });
