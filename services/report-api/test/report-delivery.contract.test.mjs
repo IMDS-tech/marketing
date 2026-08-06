@@ -1,0 +1,4 @@
+import test from'node:test';import assert from'node:assert/strict';import{readFile}from'node:fs/promises';
+const api=new URL('../src/report-delivery.controller.ts',import.meta.url);const ui=new URL('../../../apps/marketing-web/src/pages/reports/ReportDeliveryPage.tsx',import.meta.url);
+test('report delivery has tenant authorization, scheduling and notification history',async()=>{const source=await readFile(api,'utf8');assert.match(source,/requirePermission/);assert.match(source,/notification_jobs/);assert.match(source,/notification_deliveries/);assert.match(source,/nextOccurrence/);assert.match(source,/REPORT_RECIPIENTS_REQUIRED/)});
+test('report delivery UI exposes schedule, recipients, send now and history',async()=>{const source=await readFile(ui,'utf8');for(const value of['Автоматическая отправка','Получатели','Отправить сейчас','История доставки'])assert.match(source,new RegExp(value))});

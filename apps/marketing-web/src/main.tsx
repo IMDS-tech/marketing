@@ -13,6 +13,7 @@ import {NotFoundPage} from './pages/NotFoundPage';
 import {ForbiddenPage} from './pages/ForbiddenPage';
 import {ReportDirectoryPage} from './pages/reports/ReportDirectoryPage';
 import {ReportBuilderPage} from './pages/reports/ReportBuilderPage';
+import {ReportDeliveryPage} from './pages/reports/ReportDeliveryPage';
 import {AuthenticationPage} from './pages/platform/AuthenticationPage';
 import {WorkspacePage} from './pages/platform/WorkspacePage';
 import {AgencyManagementPage} from './pages/agency/AgencyManagementPage';
@@ -40,6 +41,7 @@ const clientSettingsRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/
 const dashboardsRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/client/$clientId/dashboards',component:DashboardWorkspacePage});
 const reportsRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/reports',component:ReportDirectoryPage});
 const reportBuilderRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/client/$clientId/reports/$reportId',component:ReportBuilderPage});
+const reportDeliveryRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/reports/$reportId/delivery',component:ReportDeliveryPage});
 const moduleCatalogRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/platform/modules',component:ModuleCatalogPage});
 const authenticationRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/platform/authentication',component:AuthenticationPage});
 const workspaceRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/platform/workspace',component:WorkspacePage});
@@ -61,7 +63,7 @@ const googleAdsCampaignsRoute=createRoute({getParentRoute:()=>protectedRoute,pat
 const adsFunnelRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/client/$clientId/ads/funnel',component:FunnelAnalyticsPage});
 const forbiddenRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/403',component:ForbiddenPage});
 const loginRedirectRoute=createRoute({getParentRoute:()=>rootRoute,path:'/login',component:()=> <Navigate to="/"/>});
-const routeTree=rootRoute.addChildren([protectedRoute.addChildren([indexRoute,clientsNewRoute,clientGroupsRoute,clientProfileRoute,clientUsersRoute,clientSettingsRoute,dashboardsRoute,reportsRoute,reportBuilderRoute,moduleCatalogRoute,authenticationRoute,workspaceRoute,agencyProfileRoute,agencyUsersRoute,agencyBillingRoute,onboardingRoute,integrationCatalogRoute,connectionManagerRoute,agencyConnectionsRoute,integrationSchemaRoute,syncHealthRoute,clientDataSourcesRoute,backendServiceRoute,adsCampaignsRoute,metaAdsCampaignsRoute,tiktokAdsCampaignsRoute,googleAdsCampaignsRoute,adsFunnelRoute,forbiddenRoute]),loginRedirectRoute]);
+const routeTree=rootRoute.addChildren([protectedRoute.addChildren([indexRoute,clientsNewRoute,clientGroupsRoute,clientProfileRoute,clientUsersRoute,clientSettingsRoute,dashboardsRoute,reportsRoute,reportBuilderRoute,reportDeliveryRoute,moduleCatalogRoute,authenticationRoute,workspaceRoute,agencyProfileRoute,agencyUsersRoute,agencyBillingRoute,onboardingRoute,integrationCatalogRoute,connectionManagerRoute,agencyConnectionsRoute,integrationSchemaRoute,syncHealthRoute,clientDataSourcesRoute,backendServiceRoute,adsCampaignsRoute,metaAdsCampaignsRoute,tiktokAdsCampaignsRoute,googleAdsCampaignsRoute,adsFunnelRoute,forbiddenRoute]),loginRedirectRoute]);
 const router=createRouter({routeTree,defaultPreload:'intent'});
 declare module '@tanstack/react-router'{interface Register{router:typeof router}}
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><QueryClientProvider client={queryClient}><I18nProvider><AuthProvider><RouterProvider router={router}/></AuthProvider></I18nProvider></QueryClientProvider></React.StrictMode>);
