@@ -1,0 +1,7 @@
+import type{Session}from'@supabase/supabase-js';
+export type CrossClientMetric='spend'|'impressions'|'clicks'|'leads'|'conversions'|'revenue';
+export interface CrossClientRow{clientId:string;company:string;groupName:string|null;accountManager:string|null;values:Record<CrossClientMetric,number>;derived:{ctr:number;cpc:number;cpl:number;cpa:number;roas:number}}
+export interface CrossClientTrend{date:string;metricKey:CrossClientMetric;value:number}
+export interface CrossClientResponse{summary:{clientCount:number;values:Record<CrossClientMetric,number>;derived:{ctr:number;cpc:number;cpl:number;cpa:number;roas:number}};clients:CrossClientRow[];trend:CrossClientTrend[];range:{dateFrom:string;dateTo:string};availableClients:{id:string;company:string}[]}
+const base=()=>import.meta.env.VITE_REPORT_API_URL?.replace(/\/$/,'');
+export async function getCrossClientAnalytics(input:{agencyId:string;dateFrom:string;dateTo:string;clientIds:string[]},session:Session|null){const url=base();if(!url||!session)throw new Error('REPORT_API_NOT_CONFIGURED');const params=new URLSearchParams({agencyId:input.agencyId,dateFrom:input.dateFrom,dateTo:input.dateTo});input.clientIds.forEach(id=>params.append('clientId',id));const response=await fetch(`${url}/v1/analytics/cross-client?${params}`,{headers:{authorization:`Bearer ${session.access_token}`}});if(!response.ok)throw new Error(await response.text()||`REPORT_API_${response.status}`);return response.json()as Promise<CrossClientResponse>}
