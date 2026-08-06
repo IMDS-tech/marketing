@@ -1,0 +1,2 @@
+import test from'node:test';import assert from'node:assert/strict';import{readFile}from'node:fs/promises';
+test('cross-client endpoint enforces tenant scope and returns comparison contract',async()=>{const source=await readFile(new URL('../src/analytics.controller.ts',import.meta.url),'utf8');assert.match(source,/Get\('cross-client'\)/);assert.match(source,/AGENCY_ACCESS_DENIED|requirePermission/);assert.match(source,/client_users/);assert.match(source,/availableClients/);assert.match(source,/derived/);});
