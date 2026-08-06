@@ -9,7 +9,8 @@ test('client users are invited by email and no UUID input remains',()=>{
   assert.ok(page.includes('type="email"'));
   assert.ok(page.includes('inviteClientUser'));
   assert.ok(!page.includes('UUID пользователя'));
-  assert.ok(api.includes('SUPABASE')===false,'frontend must not contain service role configuration');
+  for(const forbidden of ['SERVICE_ROLE','service_role','SUPABASE_SECRET_KEY'])assert.ok(!api.includes(forbidden),`frontend must not contain ${forbidden}`);
+  assert.ok(api.includes('VITE_SUPABASE_URL'),'public Supabase URL fallback must remain available');
 });
 
 test('client access supports role, status and removal lifecycle',()=>{

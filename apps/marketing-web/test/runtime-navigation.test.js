@@ -7,6 +7,7 @@ const navigation=await readFile(new URL('../src/modules/navigation.ts',import.me
 const main=await readFile(new URL('../src/main.tsx',import.meta.url),'utf8');
 const apiClient=await readFile(new URL('../../../packages/api-client/src/index.ts',import.meta.url),'utf8');
 const clientsApi=await readFile(new URL('../src/clients-api.ts',import.meta.url),'utf8');
+const dashboardApi=await readFile(new URL('../src/dashboard-api.ts',import.meta.url),'utf8');
 const reportApi=await readFile(new URL('../src/report-api.ts',import.meta.url),'utf8');
 const crossClientPage=await readFile(new URL('../src/pages/cross-client/CrossClientAnalyticsPage.tsx',import.meta.url),'utf8');
 
@@ -36,6 +37,8 @@ test('runtime requires configured services and contains no demo records',()=>{
     assert.ok(!source.includes('Amanat Med'));
     assert.ok(!source.includes('Demo Clinic'));
   }
+  assert.ok(clientsApi.includes("/functions/v1/clients-api"));
+  assert.ok(dashboardApi.includes("/functions/v1/dashboard-api"));
   assert.ok(clientsApi.includes('CLIENTS_API_NOT_CONFIGURED'));
-  assert.ok(reportApi.includes('REPORT_API_NOT_CONFIGURED'));
+  assert.ok(dashboardApi.includes('REPORT_API_NOT_CONFIGURED'));
 });
