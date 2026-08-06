@@ -41,7 +41,7 @@ const clientSettingsRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/
 const dashboardsRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/client/$clientId/dashboards',component:DashboardWorkspacePage});
 const reportsRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/reports',component:ReportDirectoryPage});
 const reportBuilderRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/client/$clientId/reports/$reportId',component:ReportBuilderPage});
-const reportDeliveryRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/client/$clientId/reports/$reportId/delivery',component:ReportDeliveryPage});
+const reportDeliveryRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/reports/$reportId/delivery',component:ReportDeliveryPage});
 const moduleCatalogRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/platform/modules',component:ModuleCatalogPage});
 const authenticationRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/platform/authentication',component:AuthenticationPage});
 const workspaceRoute=createRoute({getParentRoute:()=>protectedRoute,path:'/platform/workspace',component:WorkspacePage});
