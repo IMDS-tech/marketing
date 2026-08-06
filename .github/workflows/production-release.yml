@@ -1,17 +1,9 @@
-name: Production database and frontend release
+name: One-time production release 1a8fc65
 
 on:
-  workflow_dispatch:
-    inputs:
-      release_sha:
-        description: Commit SHA to release
-        required: true
-        default: main
-      run_migrations:
-        description: Apply pending Supabase migrations
-        required: true
-        type: boolean
-        default: true
+  push:
+    branches:
+      - agent/manual-production-release-20260806
 
 permissions:
   contents: read
@@ -28,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_sha }}
+          ref: 1a8fc65a7eb43ad7aab578961f02512aac78679f
       - uses: pnpm/action-setup@v4
         with:
           version: 10.14.0
@@ -56,7 +48,6 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: pnpm dlx supabase@2.109.1 link --project-ref '${{ secrets.SUPABASE_PROJECT_REF }}' --password "$SUPABASE_DB_PASSWORD"
       - name: Apply pending migrations
-        if: inputs.run_migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
