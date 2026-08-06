@@ -10,6 +10,6 @@ import {config} from './config.js';
 class RuntimeModule{}
 
 const app=await NestFactory.create<NestFastifyApplication>(RuntimeModule,new FastifyAdapter({logger:true}));
-app.enableCors({origin:config.APP_ORIGIN,methods:['GET','POST','PATCH'],allowedHeaders:['authorization','content-type']});
+app.enableCors({origin:config.APP_ORIGIN,methods:['GET','POST','PATCH','PUT','DELETE'],allowedHeaders:['authorization','content-type']});
 app.enableShutdownHooks();
 await app.listen(config.PORT,'0.0.0.0');
